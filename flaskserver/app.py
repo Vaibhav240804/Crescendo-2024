@@ -1,8 +1,12 @@
+from langchain.schema import HumanMessage, SystemMessage, AIMessage
+from langchain_community.chat_models.huggingface import ChatHuggingFace
+from langchain.prompts import PromptTemplate
 from flask import Flask, jsonify, request
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from transformers import AutoTokenizer, pipeline
 from transformers import AutoModelForSequenceClassification
+from langchain_community.llms import HuggingFaceHub
 from scipy.special import softmax
 from flask import jsonify
 from rake_nltk import Rake
@@ -47,6 +51,7 @@ def createProduct(url):
   img = soup.find('img', {'id': 'landingImage'})['src']
   price = soup.find('span', class_='a-offscreen').text.strip()
   date = datetime.datetime.now()
+  avgRating = soup.find('span', class_='a-size-base').text.strip()
   strDate = date.strftime("%Y-%m-%d %H:%M:%S")
   print(price)
   print(desc)
@@ -59,9 +64,13 @@ def createProduct(url):
       'image': img,
       'price': price,
       'date': strDate,
+        'avgRating': avgRating,
       }
   filter_query = { "email": "sonarsiddhesh105@gmail.com" }
   # print(db)
+  client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+  db = client['test']
+  collect = db['cres_users']
   update_result = collect.update_one(filter_query, { "$push": { "products": product_details } })
   print("Documents matched:", update_result.matched_count)
   print("Documents modified:", update_result.modified_count)
@@ -97,7 +106,9 @@ def extractReviews(rurl, uurl):
 
   # Use arrayFilters to match the specific product within the products array
   array_filters = [{ "product.url": uurl }]
-
+  client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+  db = client['test']
+  collect = db['cres_users']
   update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
 
   print("Documents matched:", update_result.matched_count)
@@ -151,6 +162,7 @@ def index():
 # Aspect Based Sentiment Analysis
 @app.route('/absa', methods=['POST'])
 def absa():
+    review = revString[0]
     review = request.form['text']
     try:
         aspects = request.form['aspects']
@@ -228,7 +240,7 @@ def analyze_sentiment():
         return jsonify(scores)
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)})
 
 
 
@@ -245,8 +257,10 @@ def start():
         x = extractReviews(reviewUrl, uniqueUrl)
         # print(x)
         print(revString)
+        return jsonify(revString)
     except Exception as e:
         print(e)
+        return jsonify({"error": str(e)})
 
 
 
@@ -323,6 +337,39 @@ for _, row in reviews_df.iterrows():
 @app.route('/related_sentences', methods=['GET'])
 def get_related_sentences():
     return jsonify(related_sentences)
+
+llm = HuggingFaceHub(
+    repo_id="HuggingFaceH4/zephyr-7b-beta",
+    task="text-generation",
+    model_kwargs={
+        "max_new_tokens": 512,
+        "top_k": 30,
+        "temperature": 0.1,
+        "repetition_penalty": 1.03,
+    },
+)
+
+
+prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product {reviews}",input_variables=["reviews"])
+
+chat_model = ChatHuggingFace(llm=llm)
+
+final_prompt = prompt.format(reviews=revString[0])
+
+print(final_prompt)
+messages = [
+    SystemMessage(content=final_prompt),
+]
+
+
+
+@app.route('/chat',methods=["POST"])
+def chat():
+    try:
+        text = request.form['text']
+        return jsonify({"response": text})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 if __name__ == '__main__':

@@ -104,6 +104,10 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  avgRating: {
+    type: String,
+    required: true,
+  },
   reviews: [reviewSchema],
   sentiment: sentimentSchema,
   keywords: [keywordSchema],
