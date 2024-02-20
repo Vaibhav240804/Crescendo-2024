@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
+import Chatbot from "./pages/Chatbot";
 import Redirect from "./Redirect";
 import { useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
@@ -59,6 +60,10 @@ function App() {
         {
           path: '/dashboard',
           element: <Dashboard />
+        },
+        {
+          path: '/chatbot',
+          element: <Chatbot />
         }
       ]
     }
