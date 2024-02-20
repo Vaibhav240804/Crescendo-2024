@@ -1,7 +1,9 @@
 {
-    "negative": 0.0023407102562487125,
-    "neutral": 0.018144499510526657,
-    "positive": 0.9795148372650146,
+    "sentiment": {
+        "negative": 0.0023407102562487125,
+        "neutral": 0.018144499510526657,
+        "positive": 0.9795148372650146
+    },
     "keywords" :[
         {"score": 8.5, "word": "denture looking new"},
         {"score": 4.5, "word": "denture cleaner"},
