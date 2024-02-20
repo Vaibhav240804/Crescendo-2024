@@ -36,7 +36,6 @@ def kextract():
         return {'keywords':keywords}
     except Exception as e:
         return str(e)
-    
 
 @app.route('/about')
 def about():
