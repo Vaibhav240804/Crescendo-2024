@@ -136,8 +136,8 @@ const Screen = () => {
             </svg>
 
             <button onClick={() => {
-                // navigate("/uploads")
-                window.location.href = "/uploads"
+                // navigate("/dashboard")
+                window.location.href = "/dashboard"
                 }} className="absolute bottom-4 left-4 right-4 z-10 rounded-lg border-[1px] bg-white py-2 text-sm font-medium text-[#33006F] backdrop-blur">
                 Get Started
             </button>
