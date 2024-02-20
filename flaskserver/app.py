@@ -1,16 +1,14 @@
 from flask import Flask
 from flask import request
-from rake_nltk import Rake
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from rake_nltk import Rake
-
 
 # Sentimental Analysis
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification
 from scipy.special import softmax
-from flask import Flask, request, jsonify
+from flask import jsonify
 import numpy as np
 # Sentimental Analysis
 MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
