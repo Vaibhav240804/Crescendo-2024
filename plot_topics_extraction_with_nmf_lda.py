@@ -6,11 +6,6 @@ from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 import nltk
 
-
-# nltk==3.6.5
-# pandas==1.3.5
-# scikit-learn==0.24.2
-
 nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('stopwords')

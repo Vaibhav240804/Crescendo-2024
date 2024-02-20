@@ -12,5 +12,77 @@
         {"score": 1.0, "word": "remove"},
         {"score": 1.0, "word": "keep"},
         {"score": 1.0, "word": "best"}
-    ]
+    ],
+    "reviews": [
+        {
+          "rating": "5.0 out of 5 stars",
+          "star": 5.0,
+          "body": "Great Product , Value for Money,  Original product,  great quality.",
+          "fullDate": "Reviewed in India on 27 January 2024",
+          "date": "27 January 2024"
+        },
+        {
+          "rating": "4.0 out of 5 stars",
+          "star": 4.0,
+          "body": "Good quality",
+          "fullDate": "Reviewed in India on 8 February 2024",
+          "date": "8 February 2024"
+        },
+        {
+          "rating": "5.0 out of 5 stars",
+          "star": 5.0,
+          "body": "Very very nice Toothpaste Le sakte ho",
+          "fullDate": "Reviewed in India on 13 February 2024",
+          "date": "13 February 2024"
+        },
+        {
+          "rating": "5.0 out of 5 stars",
+          "star": 5.0,
+          "body": "Worth the value I bought it for @281 pack of 4×200g and 2nd time @546 for 8×200gToothpaste is no doubt best but the packaging is ordenary it should be improved and sometime the price gets high otherwise happy with the product 😊😊",
+          "fullDate": "Reviewed in India on 1 February 2024",
+          "date": "1 February 2024"
+        },
+        {
+          "rating": "5.0 out of 5 stars",
+          "star": 5.0,
+          "body": "This is very good paste.",
+          "fullDate": "Reviewed in India on 13 February 2024",
+          "date": "13 February 2024"
+        },
+        {
+          "rating": "4.0 out of 5 stars",
+          "star": 4.0,
+          "body": "Good 👍",
+          "fullDate": "Reviewed in India on 13 February 2024",
+          "date": "13 February 2024"
+        },
+        {
+          "rating": "3.0 out of 5 stars",
+          "star": 3.0,
+          "body": "Product quality is very good at good price of 277",
+          "fullDate": "Reviewed in India on 22 January 2024",
+          "date": "22 January 2024"
+        },
+        {
+          "rating": "5.0 out of 5 stars",
+          "star": 5.0,
+          "body": "1) Effect on teeth: It claims to solve many teeth problems, maybe there is effect but I didnt notice any.2) Sensitivity: Maybe not great for sensitive teeth. But not too bad.3) Taste: Tastes like some ayurvedic recipe. Not bad.4) Ingredients: Has many natural ingredients and minimal chemicals compared to other pastes.5) Price: The 3+1 combos are so much cheaper than the single ones. There are 100g, 150g, 200g variants in 3+1 combos, so check whichever you can afford and whichever is on biggger discount.Overall: Holygrail toothpaste. Would repurchase till I find a better cheaper alternative.",
+          "fullDate": "Reviewed in India on 15 November 2023",
+          "date": "15 November 2023"
+        },
+        {
+          "rating": "4.0 out of 5 stars",
+          "star": 4.0,
+          "body": "Nice Indian product world's very reasonablly with very reasonable rate",
+          "fullDate": "Reviewed in India on 17 February 2024",
+          "date": "17 February 2024"
+        },
+        {
+          "rating": "4.0 out of 5 stars",
+          "star": 4.0,
+          "body": "Good",
+          "fullDate": "Reviewed in India on 29 January 2024",
+          "date": "29 January 2024"
+        }
+      ]      
 }
