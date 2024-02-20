@@ -183,7 +183,7 @@ def absa():
         collect = db['cres_users']
         email = session.get('email')
         filter_query = {"email": email}
-        update_query = {"$set": {"products.$[product].keywords": res}}
+        update_query = {"$set": {"products.$[product].aspecSentiment": res}}
         array_filters = [{"product.url": session.get('url')}]
         update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
         print("Documents matched:", update_result.matched_count)
@@ -360,7 +360,6 @@ for _, row in reviews_df.iterrows():
 @app.route('/related_sentences', methods=['GET'])
 def get_related_sentences():
     return jsonify(related_sentences)
-
 
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = get_key(key_to_get="HUGGINGFACEHUB_API_KEY",dotenv_path=".env")
