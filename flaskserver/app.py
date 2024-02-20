@@ -16,7 +16,20 @@ def kextract():
     text = request.form['text']
     lemmatizer = WordNetLemmatizer()
     r = Rake()
-    r.extract_keywords_from_sentences(word_tokenize(text))
+    try:
+        # lemmitize the text
+        tokenized = word_tokenize(text)
+        lemmatized = [lemmatizer.lemmatize(word) for word in tokenized]
+        lemmatized_text = ' '.join(lemmatized)
+        print(lemmatized_text)
+        # extract keywords from sentence
+        
+        r.extract_keywords_from_text(lemmatized_text)
+        keywords = r.get_ranked_phrases_with_scores()
+        # return json response with keywords and their scores
+        return {'keywords':keywords}
+    except Exception as e:
+        return str(e)
     
 
 @app.route('/about')
