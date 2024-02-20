@@ -52,7 +52,7 @@ def createProduct(url):
   img = soup.find('img', {'id': 'landingImage'})['src']
   price = soup.find('span', class_='a-offscreen').text.strip()
   date = datetime.datetime.now()
-  avgRating = soup.find('span', class_='a-size-base').text.strip()
+  avgRating = soup.find('span', {'data-hook': 'rating-out-of-text'}).text.strip()
   strDate = date.strftime("%Y-%m-%d %H:%M:%S")
   print(price)
   print(desc)
@@ -65,7 +65,7 @@ def createProduct(url):
       'image': img,
       'price': price,
       'date': strDate,
-        'avgRating': avgRating,
+       'avgRating': float(avgRating.split()[0]),
       }
   filter_query = { "email": "sonarsiddhesh105@gmail.com" }
   # print(db)
@@ -164,7 +164,7 @@ def index():
 @app.route('/absa', methods=['POST'])
 def absa():
     review = revString[0]
-    review = request.form['text']
+    # review = request.form['text']
     try:
         aspects = request.form['aspects']
         aspects = aspects.split(',')
