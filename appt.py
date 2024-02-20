@@ -1,64 +1,48 @@
+from flask import Flask, jsonify, request
 import pandas as pd
-from sklearn.decomposition import NMF
-from sklearn.feature_extraction.text import CountVectorizer
-from nltk.tokenize import sent_tokenize
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
-from flask import Flask, jsonify
-import nltk
-
-nltk.download('punkt')
-nltk.download('wordnet')
-nltk.download('stopwords')
+from pytrends.request import TrendReq
+import statsmodels.api as sm
 
 app = Flask(__name__)
 
-lemmatizer = WordNetLemmatizer()
-stop_words = set(stopwords.words('english'))
+valid_timeframes = [
+    "now 1-d",
+    "now 1-H",
+    "now 4-H",
+    "now 1-d",
+    "now 7-d",
+    "today 1-m",
+    "today 3-m",
+    "today 12-m",
+    "today 5-y"
+]
+data = pd.read_csv('flaskserver/db.csv')
+@app.route('/sva', methods=['GET'])
+def interest_over_time():
+    timeframe_choice = request.args.get('timeframe_choice', type=int)
 
-reviews_df = pd.read_csv("flaskserver/reviews.csv")
+    if not 1 <= timeframe_choice <= len(valid_timeframes):
+        return jsonify({'error': 'Invalid timeframe choice. Please enter a valid number.'}), 400
 
-reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
+    timeframe = valid_timeframes[timeframe_choice - 1]
 
-def lemmatize_sentence(sentence):
-    lemmatized_words = [lemmatizer.lemmatize(word) for word in sentence.split() if word.lower() not in stop_words]
-    return ' '.join(lemmatized_words)
+    pytrends = TrendReq(hl='en-US', tz=360)
 
-reviews_df['text_lemmatized'] = reviews_df['text'].apply(lemmatize_sentence)
+    product_name = data['name'][0]
+    kw_list = [product_name]
+    geo = "IN"
 
-vectorizer = CountVectorizer(max_df=0.95, min_df=2, stop_words='english')
-X = vectorizer.fit_transform(reviews_df['text_lemmatized'])
+    pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo)
+    interest_over_time_df = pytrends.interest_over_time().reset_index()
 
-num_topics = 5  # You can adjust this number based on your preference
-nmf_model = NMF(n_components=num_topics, random_state=42)
-nmf_topic_matrix = nmf_model.fit_transform(X)
+    interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
 
-feature_names = vectorizer.get_feature_names_out()
-word_freq = {}
-for topic_idx, topic in enumerate(nmf_model.components_):
-    for word_idx, word_count in enumerate(topic):
-        word = feature_names[word_idx]
-        if word in word_freq:
-            word_freq[word] += word_count
-        else:
-            word_freq[word] = word_count
+    result = {
+    'sva': interest_over_time_df.rename(columns={product_name: 'score'})[['date', 'score']].to_dict(orient='records')
+}
 
-overall_top_words = sorted(word_freq, key=word_freq.get, reverse=True)[:5]
 
-related_sentences = {}
-for word in overall_top_words:
-    related_sentences[word] = []
-
-for _, row in reviews_df.iterrows():
-    review_sentences = row['sentences']
-    for sentence in review_sentences:
-        for word in overall_top_words:
-            if word in sentence:
-                related_sentences[word].append(sentence)
-
-@app.route('/related_sentences', methods=['GET'])
-def get_related_sentences():
-    return jsonify(related_sentences)
+    return jsonify(result), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
