@@ -13,5 +13,6 @@ uR.post('/send-email', uC.sendEmail);
 uR.post('/register', uC.register);
 uR.post('/login', uC.login);
 uR.post('/verify-otp', uC.verifyOtp);
+uR.post('/send-product', uC.sendUserProducts);
 
 export default uR;

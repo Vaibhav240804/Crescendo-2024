@@ -124,6 +124,20 @@ class UserController {
     }
   }
 
+  sendUserProducts = async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: "User does not exist!" });
+      res.status(200).json({ message: "success", products: user.products });
+    }
+    catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+  
 }
+
 
 export default UserController;
