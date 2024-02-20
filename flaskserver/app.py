@@ -15,9 +15,9 @@ import nltk
 # import statsmodels.api as sm
 
 # ---------------------------------------
-nltk.download('punkt')
-nltk.download('wordnet')
-nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('stopwords')
 # ---------------------------------------
 
 
@@ -112,12 +112,10 @@ def polarity_scores_roberta(example):
     scores = softmax(scores)
     scores = scores.astype(np.float64)
 
-    return {
-        "sentiment": {
+    return{
         "negative":  scores[0],
         "neutral": scores[1],
         "positive": scores[2]
-        },
     }
 
 # Sentimental Analysis
@@ -126,25 +124,34 @@ def analyze_sentiment():
     data = request.form['text']
     text = data
     email = request.form['email']
-    url = request.form['url']
+
+    try:
+        url = request.form['url']
+    except:
+        url = "https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K"
+
     try:
         scores = polarity_scores_roberta(text)
-        res = jsonify(scores)
+
         client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
         db = client['test']
         collect = db['cres_users']
-        filter_query = { "email": email }
-        update_query = { "$set": { "products.$[product].sentiment": res } }  # Update the reviews field of the matched product
 
-  # Use arrayFilters to match the specific product within the products array
+        filter_query = {"email": email}
+        update_query = {"$set": {"products.$[product].sentiment": scores}}
+
+        # Use arrayFilters to match the specific product within the products array
         array_filters = [{ "product.url": url }]
 
         update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
         print("Documents matched:", update_result.matched_count)
         print("Documents modified:", update_result.modified_count)
-        return jsonify(scores)
+
+        return jsonify(scores)  # Return only the sentiment scores
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/about')
@@ -181,7 +188,7 @@ def interest_over_time():
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-reviews_df = pd.read_csv("flaskserver/reviews.csv")
+reviews_df = pd.read_csv("reviews.csv")
 
 reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
 
