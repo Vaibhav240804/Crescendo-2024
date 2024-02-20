@@ -199,30 +199,36 @@ def polarity_scores_roberta(example):
 # Sentimental Analysis
 @app.route("/sentiment", methods=["POST"])
 def analyze_sentiment():
-    data = request.form['text']
-    text = data
-    email = request.form['email']
-
     try:
-        url = request.form['url']
-    except:
-        url = "https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K"
+        data = request.form.to_dict()
+        text = data.get("text")
+        email = data.get("email")
 
-    try:
+        url = data.get("url")
+        if not url:
+            url = "https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K"
+
         scores = polarity_scores_roberta(text)
-        res = jsonify(scores)
-        filter_query = { "email": email }
-        update_query = { "$set": { "products.$[product].sentiment": res } } 
-        array_filters = [{ "product.url": url }]
+
+        # Connect to MongoDB (replace with your connection details)
+        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        db = client['test']
+        collect = db['cres_users']
+
+        filter_query = {"email": email}
+        update_query = {"$set": {"products.$[product].sentiment": scores}}
+        array_filters = [{"product.url": url}]
 
         update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
         print("Documents matched:", update_result.matched_count)
         print("Documents modified:", update_result.modified_count)
 
-        return jsonify(scores)  # Return only the sentiment scores
+        # Directly return the sentiment scores as JSON
+        return jsonify(scores)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/start',methods=["POST"])
@@ -319,9 +325,7 @@ def get_related_sentences():
 
 
 if __name__ == '__main__':
-    client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
-    db = client['test']
-    collect = db['cres_users']
+    
     app.run(debug=True)
 
 # for now done 
