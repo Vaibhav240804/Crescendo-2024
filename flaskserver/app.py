@@ -30,6 +30,7 @@ import time
 # # nltk.download('stopwords')
 # # ---------------------------------------
 
+
 reviewList = []
 revString = [""]
 headers = {
@@ -151,14 +152,12 @@ def index():
 @app.route('/absa', methods=['POST'])
 def absa():
     review = request.form['text']
-
     try:
         aspects = request.form['aspects']
         aspects = aspects.split(',')
     except Exception as e:
         print(str(e))
-        aspects = ['performance', 'durability', 'pricing', 'sensitivity']
-
+        aspects = ['performance','durability','pricing','sensitivity']
     try:
         res = []
         for aspect in aspects:
@@ -166,17 +165,7 @@ def absa():
             label = element[0]['label']
             score = element[0]['score']
             res.append({'aspect': aspect, 'label': label, 'score': score})
-
-        # Connect to MongoDB (replace with your connection details)
-        client = pymongo.MongoClient("mongodb+srv://your_username:your_password@your_cluster_address/?retryWrites=true&w=majority")
-        db = client['your_database_name']  # Replace with your actual database name
-        collect = db['your_collection_name']  # Replace with your actual collection name
-
-        # Insert the ABSA results into MongoDB
-        collect.insert_one({"review": review, "aspects": res})
-
         return jsonify(res)
-
     except Exception as e:
         return jsonify({"error": str(e)})
 
@@ -287,12 +276,10 @@ def interest_over_time():
     }
     return jsonify(result), 200
 
-# ---------------- LDA NMF -------------------------------------------------
 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-print(reviewList)
 reviews_df = pd.read_csv("reviews.csv")
 
 reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
@@ -336,6 +323,7 @@ for _, row in reviews_df.iterrows():
 @app.route('/related_sentences', methods=['GET'])
 def get_related_sentences():
     return jsonify(related_sentences)
+
 
 if __name__ == '__main__':
     
