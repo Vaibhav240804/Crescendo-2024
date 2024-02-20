@@ -16,8 +16,6 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
 
-
-
 app = Flask(__name__)
 
 # helper function to lemmatize the text
@@ -67,11 +65,8 @@ def polarity_scores_roberta(example):
 # Sentimental Analysis
 @app.route("/sentiment", methods=["POST"])
 def analyze_sentiment():
-    data = request.get_json()
-    if not data or not data.get("text"):
-        return jsonify({"error": "Missing 'text' field in request body"}), 400
-
-    text = data["text"]
+    data = request.form['text']
+    text = data
     try:
         scores = polarity_scores_roberta(text)
         return jsonify(scores)

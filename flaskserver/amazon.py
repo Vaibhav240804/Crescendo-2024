@@ -16,7 +16,7 @@ def extractReviews(rurl, title):
   # print(rurl)
   # print("pg no - ", pg)
   page = requests.get(rurl, headers=headers)
-  print(page)
+  # print(page)
   soup = BeautifulSoup(page.content, "html.parser")
   reviews = soup.findAll('div', {'data-hook': 'review' })
   print(len(reviews))
@@ -34,9 +34,9 @@ def extractReviews(rurl, title):
         'fullDate': fullDate,
         'date': date_obj,
     }
-    print(review)
+    # print(review)
     reviewList.append(review)
-    revString[0] += review['body']
+    revString[0] = revString[0] + " " + review['body']
   return reviewList
 
 if __name__ == "__main__":
@@ -45,18 +45,19 @@ if __name__ == "__main__":
         url = 'https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K'
         # print(headers)
         page = requests.get(url, headers=headers)
-        print(page)
+        # print(page)
         time.sleep(2)
         soup = BeautifulSoup(page.content, "html.parser")
-        print(soup.title.string)
+        # print(soup.title.string)
         # title = soup.find('span', {'id': 'productTitle'}).text.strip()
         title = soup.find(id="productTitle").get_text()
-        print(title)
+        # print(title)
         nurl = url.split('?')
         url = nurl[0]
         reviewUrl = url.replace("dp", "product-reviews") + "?pageNumber=" + str(1)
         # print(reviewUrl)
         x = extractReviews(reviewUrl, title)
-        print(x)
+        # print(x)
+        print(revString)
     except Exception as e:
         print(e)
