@@ -314,51 +314,63 @@ def interest_over_time():
     return jsonify(result), 200
 
 
-lemmatizer = WordNetLemmatizer()
-stop_words = set(stopwords.words('english'))
+# ---------------------------------lda------------------------------------
 
-reviews_df = pd.read_csv("reviews.csv")
+def analyze_reviews(reviewList):
+    lemmatizer = WordNetLemmatizer()
+    stop_words = set(stopwords.words('english'))
+    if len(reviewList)==0:
+        return "List is Empty"
+    # Combine review bodies into one string
+    review_text = ' '.join([review['body'] for review in reviewList])
 
-reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
+    # Tokenize the combined text into sentences
+    review_sentences = sent_tokenize(review_text)
 
-def lemmatize_sentence(sentence):
-    lemmatized_words = [lemmatizer.lemmatize(word) for word in sentence.split() if word.lower() not in stop_words]
-    return ' '.join(lemmatized_words)
-
-reviews_df['text_lemmatized'] = reviews_df['text'].apply(lemmatize_sentence)
-
-vectorizer = CountVectorizer(max_df=0.95, min_df=2, stop_words='english')
-X = vectorizer.fit_transform(reviews_df['text_lemmatized'])
-
-num_topics = 5  # You can adjust this number based on your preference
-nmf_model = NMF(n_components=num_topics, random_state=42)
-nmf_topic_matrix = nmf_model.fit_transform(X)
-
-feature_names = vectorizer.get_feature_names_out()
-word_freq = {}
-for topic_idx, topic in enumerate(nmf_model.components_):
-    for word_idx, word_count in enumerate(topic):
-        word = feature_names[word_idx]
-        if word in word_freq:
-            word_freq[word] += word_count
-        else:
-            word_freq[word] = word_count
-
-overall_top_words = sorted(word_freq, key=word_freq.get, reverse=True)[:5]
-
-related_sentences = {}
-for word in overall_top_words:
-    related_sentences[word] = []
-
-for _, row in reviews_df.iterrows():
-    review_sentences = row['sentences']
+    # Lemmatize each sentence and remove stop words
+    lemmatized_sentences = []
     for sentence in review_sentences:
+        lemmatized_words = [lemmatizer.lemmatize(word) for word in sentence.split() if word.lower() not in stop_words]
+        lemmatized_sentences.append(' '.join(lemmatized_words))
+
+    # Vectorize the lemmatized sentences
+    vectorizer = CountVectorizer(max_df=0.95, min_df=2, stop_words='english')
+    X = vectorizer.fit_transform(lemmatized_sentences)
+
+    # Apply NMF to find topics
+    num_topics = 5
+    nmf_model = NMF(n_components=num_topics, random_state=42)
+    nmf_topic_matrix = nmf_model.fit_transform(X)
+
+    feature_names = vectorizer.get_feature_names_out()
+    word_freq = {}
+    for topic_idx, topic in enumerate(nmf_model.components_):
+        for word_idx, word_count in enumerate(topic):
+            word = feature_names[word_idx]
+            if word in word_freq:
+                word_freq[word] += word_count
+            else:
+                word_freq[word] = word_count
+
+    # Get the overall top words
+    overall_top_words = sorted(word_freq, key=word_freq.get, reverse=True)[:5]
+
+    # Find related sentences for each top word
+    related_sentences = {}
+    for word in overall_top_words:
+        related_sentences[word] = []
+
+    for sentence in lemmatized_sentences:
         for word in overall_top_words:
             if word in sentence:
                 related_sentences[word].append(sentence)
 
+    return related_sentences
+
+# Define Flask endpoint
 @app.route('/related_sentences', methods=['GET'])
 def get_related_sentences():
+    related_sentences = analyze_reviews(reviewList)
     return jsonify(related_sentences)
 
 
