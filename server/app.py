@@ -1,6 +1,9 @@
 from flask import Flask
 from flask import request
 from rake_nltk import Rake
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from rake_nltk import Rake
 
 app = Flask(__name__)
 
@@ -11,12 +14,9 @@ def index():
 @app.route('/kextract',methods=['POST'])
 def kextract():
     text = request.form['text']
+    lemmatizer = WordNetLemmatizer()
     r = Rake()
-    try:
-        r.extract_keywords_from_text(text)
-        return {'keywords':r.get_ranked_phrases()}
-    except:
-        return {'keywords':[]}
+    r.extract_keywords_from_sentences(word_tokenize(text))
     
 
 @app.route('/about')
