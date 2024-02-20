@@ -30,7 +30,6 @@ import time
 # # nltk.download('stopwords')
 # # ---------------------------------------
 
-
 reviewList = []
 revString = [""]
 headers = {
@@ -276,10 +275,12 @@ def interest_over_time():
     }
     return jsonify(result), 200
 
+# ---------------- LDA NMF -------------------------------------------------
 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
+print(reviewList)
 reviews_df = pd.read_csv("reviews.csv")
 
 reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
@@ -323,7 +324,6 @@ for _, row in reviews_df.iterrows():
 @app.route('/related_sentences', methods=['GET'])
 def get_related_sentences():
     return jsonify(related_sentences)
-
 
 if __name__ == '__main__':
     
