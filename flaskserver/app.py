@@ -37,17 +37,29 @@ load_dotenv()
 # # ---------------------------------------
 
 reviewList = []
+global_title = ""
 revString = [""]
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US, en;q=0.5'
 }
 
+def extract_starting_words(sentence):
+    # Split the sentence into words
+    words = sentence.split()
+
+    # Extract the first 3 words
+    starting_words = ' '.join(words[:3])
+
+    return starting_words
+
 def createProduct(url):
+  global global_title
   page = requests.get(url, headers=headers)
   time.sleep(2)
   soup = BeautifulSoup(page.content, "html.parser")
   title = soup.find(id="productTitle").get_text()
+  global_title = extract_starting_words(title)
   desc = soup.find(id="productDescription").get_text()
   img = soup.find('img', {'id': 'landingImage'})['src']
   price = soup.find('span', class_='a-offscreen').text.strip()
@@ -296,7 +308,7 @@ def interest_over_time():
 
     pytrends = TrendReq(hl='en-US', tz=360)
 
-    product_name = data['name'][0]
+    product_name = global_title
     kw_list = [product_name]
     geo = "IN"
 
