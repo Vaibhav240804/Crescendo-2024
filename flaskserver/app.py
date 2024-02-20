@@ -57,9 +57,11 @@ def polarity_scores_roberta(example):
     scores = scores.astype(np.float64)
 
     return {
-        "negative": scores[0],
+        "sentiment": {
+        "negative":  scores[0],
         "neutral": scores[1],
-        "positive": scores[2],
+        "positive": scores[2]
+        },
     }
 
 # Sentimental Analysis
