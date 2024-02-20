@@ -13,20 +13,20 @@ headers = {
 }
 
 def extractReviews(rurl):
-#   print("pg no - ", pg)
-  print(rurl)
+  # print(rurl)
+  # print("pg no - ", pg)
   page = requests.get(rurl, headers=headers)
   print(page)
-  time.sleep(2)
   soup = BeautifulSoup(page.content, "html.parser")
-#   print(soup.title.string)
   reviews = soup.findAll('div', {'data-hook': 'review' })
+  print(len(reviews))
+  # print(reviews[0])
   for item in reviews:
+    # print(item)
     ratingText = item.find('i', {'data-hook': 'review-star-rating' }).text.strip()
     fullDate = item.find('span', {'data-hook': 'review-date' }).text.strip()
     date_obj = fullDate.split('on')[1].strip()
     review = {
-        # 'name': title.strip(),
         'rating': ratingText,
         'star': float(ratingText.split()[0]),
         'body': item.find('span', {'data-hook': 'review-body' }).text.strip(),
@@ -36,7 +36,7 @@ def extractReviews(rurl):
     print(review)
     reviewList.append(review)
     revString[0] += review['body']
-    return revString[0]
+  return reviewList
 
 if __name__ == "__main__":
     # for i in range(1, 11):
@@ -48,9 +48,9 @@ if __name__ == "__main__":
         time.sleep(2)
         soup = BeautifulSoup(page.content, "html.parser")
         print(soup.title.string)
-        title = soup.find(id="productTitle").get_text
+        # title = soup.find(id="productTitle").get_text
         # title = soup.find('span', {'id': 'productTitle'}).text.strip()
-        print(title)
+        # print(title)
         nurl = url.split('?')
         url = nurl[0]
         reviewUrl = url.replace("dp", "product-reviews") + "?pageNumber=" + str(1)
