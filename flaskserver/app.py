@@ -51,6 +51,7 @@ def createProduct(url):
   img = soup.find('img', {'id': 'landingImage'})['src']
   price = soup.find('span', class_='a-offscreen').text.strip()
   date = datetime.datetime.now()
+  avgRating = soup.find('span', class_='a-size-base').text.strip()
   strDate = date.strftime("%Y-%m-%d %H:%M:%S")
   print(price)
   print(desc)
@@ -63,9 +64,13 @@ def createProduct(url):
       'image': img,
       'price': price,
       'date': strDate,
+        'avgRating': avgRating,
       }
   filter_query = { "email": "sonarsiddhesh105@gmail.com" }
   # print(db)
+  client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+  db = client['test']
+  collect = db['cres_users']
   update_result = collect.update_one(filter_query, { "$push": { "products": product_details } })
   print("Documents matched:", update_result.matched_count)
   print("Documents modified:", update_result.modified_count)
@@ -101,7 +106,9 @@ def extractReviews(rurl, uurl):
 
   # Use arrayFilters to match the specific product within the products array
   array_filters = [{ "product.url": uurl }]
-
+  client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+  db = client['test']
+  collect = db['cres_users']
   update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
 
   print("Documents matched:", update_result.matched_count)
