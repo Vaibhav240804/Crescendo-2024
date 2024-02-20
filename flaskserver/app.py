@@ -4,19 +4,16 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from rake_nltk import Rake
 
-
 # Sentimental Analysis
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification
 from scipy.special import softmax
-from flask import Flask, request, jsonify
+from flask import jsonify
 import numpy as np
 # Sentimental Analysis
 MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
-
-
 
 
 app = Flask(__name__)
@@ -68,11 +65,8 @@ def polarity_scores_roberta(example):
 # Sentimental Analysis
 @app.route("/sentiment", methods=["POST"])
 def analyze_sentiment():
-    data = request.get_json()
-    if not data or not data.get("text"):
-        return jsonify({"error": "Missing 'text' field in request body"}), 400
-
-    text = data["text"]
+    data = request.form['text']
+    text = data
     try:
         scores = polarity_scores_roberta(text)
         return jsonify(scores)
