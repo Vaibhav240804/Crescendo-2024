@@ -23,6 +23,9 @@ import requests
 import datetime
 import pymongo
 import time
+import os
+from dotenv import load_dotenv, get_key
+load_dotenv()
 # import nltk
 
 
@@ -351,6 +354,10 @@ for _, row in reviews_df.iterrows():
 def get_related_sentences():
     return jsonify(related_sentences)
 
+
+
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = get_key(key_to_get="HUGGINGFACEHUB_API_KEY",dotenv_path=".env")
+
 llm = HuggingFaceHub(
     repo_id="HuggingFaceH4/zephyr-7b-beta",
     task="text-generation",
@@ -368,19 +375,26 @@ prompt = PromptTemplate(template= "You're a helpful data assistant which can ans
 chat_model = ChatHuggingFace(llm=llm)
 
 final_prompt = prompt.format(reviews=revString[0])
+user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
 
-print(final_prompt)
-messages = [
+def chatwithbot(txt:str):
+    messages = [
     SystemMessage(content=final_prompt),
-]
+    HumanMessage(content=user_template.format(user_input=txt))
+    ]
+    res = chat_model(messages).content
+    res = res[res.find("assistant")+9:]
+    return res
 
 
+    
 
 @app.route('/chat',methods=["POST"])
 def chat():
     try:
-        text = request.form['text']
-        return jsonify({"response": text})
+        txt = request.form['text']
+        res = chatwithbot(txt)
+        return jsonify(res)
     except Exception as e:
         return jsonify({"error": str(e)})
 
