@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import request
-from rake_nltk import Rake
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from rake_nltk import Rake

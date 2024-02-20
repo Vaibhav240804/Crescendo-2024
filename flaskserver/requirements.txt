@@ -3,3 +3,4 @@ flask
 nltk
 transformers
 scipy
+bs4
