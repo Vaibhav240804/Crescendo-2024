@@ -41,6 +41,7 @@ from transformers import AutoModelForSequenceClassification
 from scipy.special import softmax
 from flask import jsonify
 import numpy as np
+import pymongo
 
 # Aspect Based Sentiment Analysis
 
@@ -124,8 +125,23 @@ def polarity_scores_roberta(example):
 def analyze_sentiment():
     data = request.form['text']
     text = data
+    email = request.form['email']
+    url = request.form['url']
     try:
         scores = polarity_scores_roberta(text)
+        res = jsonify(scores)
+        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        db = client['test']
+        collect = db['cres_users']
+        filter_query = { "email": email }
+        update_query = { "$set": { "products.$[product].sentiment": res } }  # Update the reviews field of the matched product
+
+  # Use arrayFilters to match the specific product within the products array
+        array_filters = [{ "product.url": url }]
+
+        update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
+        print("Documents matched:", update_result.matched_count)
+        print("Documents modified:", update_result.modified_count)
         return jsonify(scores)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
