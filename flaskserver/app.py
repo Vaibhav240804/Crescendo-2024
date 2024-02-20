@@ -30,24 +30,19 @@ def lemmatize_text(text):
 def index():
     return 'Hello, World!'
 
-@app.route('/kextract',methods=['POST'])
+@app.route('/kextract', methods=['POST'])
 def kextract():
     text = request.form['text']
     r = Rake()
     try:
-        # lemmatize the text
-        try:
-            lemmatized_text = lemmatize_text(text)
-        except Exception as e:
-            return str(e)
-        print(lemmatized_text)        
+        lemmatized_text = lemmatize_text(text)
         r.extract_keywords_from_text(lemmatized_text)
-        keywords = r.get_ranked_phrases_with_scores()
-        # return json response with keywords and their scores
-        return {'keywords':keywords}
+        keywords_with_scores = r.get_ranked_phrases_with_scores()
+        keywords_list = [{"word": keyword, "score": score} for score, keyword in keywords_with_scores]
+        return jsonify(keywords_list)
     except Exception as e:
-        return str(e)
-    
+        return jsonify({"error": str(e)})
+
 # Sentimental Analysis    
 def polarity_scores_roberta(example):
     encoded_text = tokenizer(example, return_tensors="pt")
