@@ -356,21 +356,18 @@ llm = HuggingFaceHub(
     },
 )
 
-
-prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product {reviews}",input_variables=["reviews"])
-
 chat_model = ChatHuggingFace(llm=llm)
 
-final_prompt = prompt.format(reviews=revString[0])
-user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
-
 def chatwithbot(txt:str):
+    prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product --> {reviews}",input_variables=["reviews"])
+    final_prompt = prompt.format(reviews=revString[0])
+    user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
     messages = [
     SystemMessage(content=final_prompt),
     HumanMessage(content=user_template.format(user_input=txt))
     ]
     res = chat_model(messages).content
-    res = res[res.find("assistant")+9:]
+    res = res.split("</s>\n\n")[1]
     return res
 
 
