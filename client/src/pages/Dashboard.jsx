@@ -24,6 +24,43 @@ import SendIcon from '@mui/icons-material/Send';
 import { useSelector, useDispatch } from 'react-redux';
 import AddIcon from '@mui/icons-material/Add';
 import { setCurrProd } from '../redux/features/userslice';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import Rating from '@mui/material/Rating';
+import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
+import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
+import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
+
+const StyledRating = styled(Rating)(({ theme }) => ({
+    '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
+        color: theme.palette.action.disabled,
+    },
+}));
+
+const customIcons = {
+    1: {
+        icon: <SentimentVeryDissatisfiedIcon color="error" />,
+        label: 'Very Dissatisfied',
+    },
+    2: {
+        icon: <SentimentDissatisfiedIcon color="error" />,
+        label: 'Dissatisfied',
+    },
+    3: {
+        icon: <SentimentSatisfiedIcon color="warning" />,
+        label: 'Neutral',
+    },
+    4: {
+        icon: <SentimentSatisfiedAltIcon color="success" />,
+        label: 'Satisfied',
+    },
+    5: {
+        icon: <SentimentVerySatisfiedIcon color="success" />,
+        label: 'Very Satisfied',
+    },
+};
 
 const Dashboard = () => {
     const dispatch = useDispatch();
@@ -174,9 +211,43 @@ const Dashboard = () => {
                             </>)
                                 :
                                 (<div className='w-full flex flex-col items-center gap-8 justify-center'>
-                                   <div className='border-2 border-black text-center w-[90%]'>
-                                    hello
-                                   </div>
+                                    <div className='flex items-center justify-between p-2 bg-white shadow-xl rounded-xl text-center w-[90%]'>
+                                        <div className='w-[20%]'>
+                                            <img src={prod.image} alt="product" width="100%" className='cursor-pointer' onClick={() => {
+                                                window.open(prod.url);
+                                            }} />
+                                        </div>
+                                        <div className='w-[60%] flex flex-col items-start justify-normal gap-1 text-justify'>
+                                            <span className='font-bold text-black text-center'>
+                                                {prod.name}
+                                            </span>
+                                            <span className='font-bold text-black text-opacity-65 text-xs'>
+                                                {prod.description}
+                                            </span>
+                                        </div>
+                                        <div className='w-[15%] flex flex-col items-center justify-center gap-2 text-justify'>
+                                            <span className='font-bold text-2xl tracking-wide'>
+                                                {prod.price}
+                                            </span>
+                                            <span className='font-semibold text-sm text-black text-opacity-40'>
+                                                {prod.date}
+                                            </span>
+                                            <span className='text-xs text-blue-600 hover:underline cursor-pointer' onClick={() => {
+                                                window.open(prod.url);
+                                            }}>
+                                                View on Amazon
+                                            </span>
+                                            <span>
+                                                <StyledRating
+                                                    name="highlight-selected-only"
+                                                    // calc the average rating of product
+                                                    IconContainerComponent={IconContainer}
+                                                    getLabelText={(value) => customIcons[value].label}
+                                                    highlightSelectedOnly
+                                                />
+                                            </span>
+                                        </div>
+                                    </div>
                                     <div className='flex items-center justify-center gap-4'>
                                         <div className=''>
                                             <h2>Sentiment</h2>
