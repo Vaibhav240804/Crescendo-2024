@@ -7,7 +7,6 @@ from pytrends.request import TrendReq
 import statsmodels.api as sm
 
 
-# --------- sva ------------
 valid_timeframes = [
     "now 1-d",
     "now 1-H",
@@ -24,16 +23,22 @@ data = pd.read_csv('db.csv')
 # ------------------------
 
 # Sentimental Analysis
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, pipeline
 from transformers import AutoModelForSequenceClassification
 from scipy.special import softmax
 from flask import jsonify
 import numpy as np
+
+# Aspect Based Sentiment Analysis
+
+tokenizer_for_deberta = AutoTokenizer.from_pretrained("yangheng/deberta-v3-large-absa-v1.1")
+deberta_model = AutoModelForSequenceClassification.from_pretrained("yangheng/deberta-v3-large-absa-v1.1")
+classifier_deberta = pipeline("text-classification", model=deberta_model, tokenizer=tokenizer_for_deberta)
+
 # Sentimental Analysis
 MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
-
 
 app = Flask(__name__)
 
@@ -48,6 +53,23 @@ def lemmatize_text(text):
 @app.route('/')
 def index():
     return 'Hello, World!'
+
+
+# Aspect Based Sentiment Analysis
+@app.route('/absa', methods=['POST'])
+def absa():
+    review = request.form['text']
+    try:
+        res = []
+        for aspect in ['performance','durability','pricing','sensitivity']:
+            element = classifier_deberta(review, text_pair=aspect)
+            label = element[0]['label']
+            score = element[0]['score']
+            res.append({'aspect': aspect, 'label': label, 'score': score})
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 
 @app.route('/kextract', methods=['POST'])
 def kextract():
