@@ -367,11 +367,10 @@ def chatwithbot(txt:str):
     HumanMessage(content=user_template.format(user_input=txt))
     ]
     res = chat_model(messages).content
-    res = res.split("</s>\n\n")[1]
-    return res
+    res = str(res)
+    start_idx = res.find("<|assistant|>")
+    return res[start_idx + len("<|assistant|>") :]
 
-
-    
 
 @app.route('/chat',methods=["POST"])
 def chat():
