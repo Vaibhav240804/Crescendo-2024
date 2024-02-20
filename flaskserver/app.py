@@ -134,6 +134,7 @@ model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
 app = Flask(__name__)
 
+
 # helper function to lemmatize the text
 def lemmatize_text(text):
     lemmatizer = WordNetLemmatizer()
