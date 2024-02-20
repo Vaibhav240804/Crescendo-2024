@@ -6,7 +6,7 @@ import datetime
 from bs4 import BeautifulSoup
 
 reviewList = []
-revString = ""
+revString = [""]
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US, en;q=0.5'
@@ -35,7 +35,8 @@ def extractReviews(rurl):
     }
     print(review)
     reviewList.append(review)
-    # revString += review['body']
+    revString[0] += review['body']
+    return revString[0]
 
 if __name__ == "__main__":
     # for i in range(1, 11):
@@ -54,6 +55,7 @@ if __name__ == "__main__":
         url = nurl[0]
         reviewUrl = url.replace("dp", "product-reviews") + "?pageNumber=" + str(1)
         # print(reviewUrl)
-        extractReviews(reviewUrl)
+        x = extractReviews(reviewUrl)
+        print(x)
     except Exception as e:
         print(e)
