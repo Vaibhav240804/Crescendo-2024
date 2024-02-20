@@ -16,7 +16,7 @@ valid_timeframes = [
     "today 12-m",
     "today 5-y"
 ]
-data = pd.read_csv('db.csv')
+data = pd.read_csv('flaskserver/db.csv')
 @app.route('/sva', methods=['GET'])
 def interest_over_time():
     timeframe_choice = request.args.get('timeframe_choice', type=int)
@@ -38,8 +38,9 @@ def interest_over_time():
     interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
 
     result = {
-        'interest_over_time': interest_over_time_df[['date', product_name]].to_dict(orient='records')
-    }
+    'sva': interest_over_time_df.rename(columns={product_name: 'score'})[['date', 'score']].to_dict(orient='records')
+}
+
 
     return jsonify(result), 200
 
