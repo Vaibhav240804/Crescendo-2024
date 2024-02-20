@@ -12,7 +12,7 @@ headers = {
     'Accept-Language': 'en-US, en;q=0.5'
 }
 
-def extractReviews(rurl):
+def extractReviews(rurl, title):
   # print(rurl)
   # print("pg no - ", pg)
   page = requests.get(rurl, headers=headers)
@@ -27,6 +27,7 @@ def extractReviews(rurl):
     fullDate = item.find('span', {'data-hook': 'review-date' }).text.strip()
     date_obj = fullDate.split('on')[1].strip()
     review = {
+        'title': title.strip(),
         'rating': ratingText,
         'star': float(ratingText.split()[0]),
         'body': item.find('span', {'data-hook': 'review-body' }).text.strip(),
@@ -48,14 +49,14 @@ if __name__ == "__main__":
         time.sleep(2)
         soup = BeautifulSoup(page.content, "html.parser")
         print(soup.title.string)
-        # title = soup.find(id="productTitle").get_text
         # title = soup.find('span', {'id': 'productTitle'}).text.strip()
-        # print(title)
+        title = soup.find(id="productTitle").get_text()
+        print(title)
         nurl = url.split('?')
         url = nurl[0]
         reviewUrl = url.replace("dp", "product-reviews") + "?pageNumber=" + str(1)
         # print(reviewUrl)
-        x = extractReviews(reviewUrl)
+        x = extractReviews(reviewUrl, title)
         print(x)
     except Exception as e:
         print(e)
