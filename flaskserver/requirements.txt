@@ -9,3 +9,4 @@ pytrends
 scikit-learn
 langchain
 langchain-community
+python-dotenv
