@@ -4,8 +4,7 @@ from nltk.stem import WordNetLemmatizer
 from rake_nltk import Rake
 import pandas as pd
 from pytrends.request import TrendReq
-import statsmodels.api as sm
-
+# import statsmodels.api as sm
 
 # --------- sva ------------
 valid_timeframes = [
@@ -19,6 +18,7 @@ valid_timeframes = [
     "today 12-m",
     "today 5-y"
 ]
+
 data = pd.read_csv('db.csv')
 
 # ------------------------
