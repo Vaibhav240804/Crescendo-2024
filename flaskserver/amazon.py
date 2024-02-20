@@ -21,15 +21,19 @@ def createProduct(url):
   desc = soup.find(id="productDescription").get_text()
   img = soup.find('img', {'id': 'landingImage'})['src']
   price = soup.find('span', class_='a-offscreen').text.strip()
+  date = datetime.datetime.now()
+  strDate = date.strftime("%Y-%m-%d %H:%M:%S")
   print(price)
   print(desc)
   print(img)
+  print(date)
   product_details = {
       'name': title.strip(),
       'url': url,
       'description': desc.strip(),
       'image': img,
-      'price': price
+      'price': price,
+      'date': strDate,
       }
   client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
   db = client['test']
