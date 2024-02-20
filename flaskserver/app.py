@@ -58,8 +58,14 @@ def index():
 def absa():
     review = request.form['text']
     try:
+        aspects = request.form['aspects']
+        aspects = aspects.split(',')
+    except Exception as e:
+        print(str(e))
+        aspects = ['performance','durability','pricing','sensitivity']
+    try:
         res = []
-        for aspect in ['performance','durability','pricing','sensitivity']:
+        for aspect in aspects:
             element = classifier_deberta(review, text_pair=aspect)
             label = element[0]['label']
             score = element[0]['score']
