@@ -77,7 +77,6 @@ def extractReviews(rurl, uurl):
 
   update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
 
-
   print("Documents matched:", update_result.matched_count)
   print("Documents modified:", update_result.modified_count)
   return reviewList

@@ -20,8 +20,6 @@ valid_timeframes = [
 ]
 data = pd.read_csv('db.csv')
 
-# ------------------------
-
 # Sentimental Analysis
 from transformers import AutoTokenizer, pipeline
 from transformers import AutoModelForSequenceClassification
@@ -116,8 +114,6 @@ def analyze_sentiment():
 def about():
     return 'This is the about page.'
 
-
-# ----------------------- sva ----------------------------
 
 @app.route('/sva', methods=['GET'])
 def interest_over_time():
