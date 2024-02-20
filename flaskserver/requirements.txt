@@ -6,6 +6,4 @@ scipy
 bs4
 pandas
 pytrends
-nltk
-pandas
 scikit-learn
