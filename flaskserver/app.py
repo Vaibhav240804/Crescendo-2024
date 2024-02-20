@@ -117,11 +117,8 @@ def extractReviews(rurl, uurl):
   return reviewList
 
 
+
 valid_timeframes = [
-    "now 1-d",
-    "now 1-H",
-    "now 4-H",
-    "now 1-d",
     "now 7-d",
     "today 1-m",
     "today 3-m",
@@ -372,8 +369,6 @@ def analyze_reviews(reviewList):
 def get_related_sentences():
     related_sentences = analyze_reviews(reviewList)
     return jsonify(related_sentences)
-
-
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = get_key(key_to_get="HUGGINGFACEHUB_API_KEY",dotenv_path=".env")
 
