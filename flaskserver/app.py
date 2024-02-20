@@ -1,7 +1,7 @@
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
 from langchain_community.chat_models.huggingface import ChatHuggingFace
 from langchain.prompts import PromptTemplate
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from transformers import AutoTokenizer, pipeline
@@ -28,7 +28,6 @@ from dotenv import load_dotenv, get_key
 load_dotenv()
 # import nltk
 
-
 # # import statsmodels.api as sm
 
 # # ---------------------------------------
@@ -36,7 +35,6 @@ load_dotenv()
 # # nltk.download('wordnet')
 # # nltk.download('stopwords')
 # # ---------------------------------------
-
 
 reviewList = []
 revString = [""]
@@ -120,6 +118,10 @@ def extractReviews(rurl, uurl):
 
 
 valid_timeframes = [
+    "now 1-d",
+    "now 1-H",
+    "now 4-H",
+    "now 1-d",
     "now 7-d",
     "today 1-m",
     "today 3-m",
@@ -143,7 +145,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
 app = Flask(__name__)
-
+app.secret_key = 'supersecret'
 
 # helper function to lemmatize the text
 def lemmatize_text(text):
@@ -176,6 +178,16 @@ def absa():
             label = element[0]['label']
             score = element[0]['score']
             res.append({'aspect': aspect, 'label': label, 'score': score})
+        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        db = client['test']
+        collect = db['cres_users']
+        email = session.get('email')
+        filter_query = {"email": email}
+        update_query = {"$set": {"products.$[product].keywords": res}}
+        array_filters = [{"product.url": session.get('url')}]
+        update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
+        print("Documents matched:", update_result.matched_count)
+        print("Documents modified:", update_result.modified_count)
         return jsonify(res)
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -183,13 +195,24 @@ def absa():
 
 @app.route('/kextract', methods=['POST'])
 def kextract():
-    text = request.form['text']
+    text = revString[0]
     r = Rake()
     try:
         lemmatized_text = lemmatize_text(text)
+        email = session.get('email')
         r.extract_keywords_from_text(lemmatized_text)
         keywords_with_scores = r.get_ranked_phrases_with_scores()
         keywords_list = [{"word": keyword, "score": score} for score, keyword in keywords_with_scores]
+        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        db = client['test']
+        collect = db['cres_users']
+
+        filter_query = {"email": email}
+        update_query = {"$set": {"products.$[product].keywords": keywords_list}}
+        array_filters = [{"product.url": session.get('url')}]
+        update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
+        print("Documents matched:", update_result.matched_count)
+        print("Documents modified:", update_result.modified_count)
         return jsonify(keywords_list)
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -214,21 +237,21 @@ def analyze_sentiment():
     try:
         data = request.form.to_dict()
         text = data.get("text")
-        email = data.get("email")
+        email = session.get('email')
 
         url = data.get("url")
         if not url:
             url = "https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K"
 
         scores = polarity_scores_roberta(text)
-
+        session['url'] = url
         # Connect to MongoDB (replace with your connection details)
         client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
         db = client['test']
         collect = db['cres_users']
 
         filter_query = {"email": email}
-        update_query = {"$set": {"products.$[product].sentiment": scores}}
+        update_query = {"$set": {"products.$[product].sentiment": jsonify(scores)}}
         array_filters = [{"product.url": url}]
 
         update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
@@ -247,6 +270,7 @@ def analyze_sentiment():
 def start():
     try:
         url = request.form['url']
+        session['email'] = request.form['email']
         # url = 'https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K'
         uniqueUrl = createProduct(url)
         nurl = url.split('?')
@@ -266,21 +290,27 @@ def start():
 
 @app.route('/sva', methods=['GET'])
 def interest_over_time():
+    timeframe_choice = request.args.get('timeframe_choice', type=int)
+
+    if not 1 <= timeframe_choice <= len(valid_timeframes):
+        return jsonify({'error': 'Invalid timeframe choice. Please enter a valid number.'}), 400
+
+    timeframe = valid_timeframes[timeframe_choice - 1]
+
     pytrends = TrendReq(hl='en-US', tz=360)
+
     product_name = data['name'][0]
     kw_list = [product_name]
     geo = "IN"
-    
-    sva_data = {}
 
-    for timeframe in valid_timeframes:
-        pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo)
-        interest_over_time_df = pytrends.interest_over_time().reset_index()
-        interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
-        sva_data[timeframe] = interest_over_time_df.rename(columns={product_name: 'score'})[['date', 'score']].to_dict(orient='records')
+    pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo)
+    interest_over_time_df = pytrends.interest_over_time().reset_index()
 
-    result = {'sva': sva_data}
+    interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
 
+    result = {
+        'interest_over_time': interest_over_time_df[['date', product_name]].to_dict(orient='records')
+    }
     return jsonify(result), 200
 
 
@@ -358,18 +388,21 @@ llm = HuggingFaceHub(
     },
 )
 
+
+prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product {reviews}",input_variables=["reviews"])
+
 chat_model = ChatHuggingFace(llm=llm)
 
+final_prompt = prompt.format(reviews=revString[0])
+user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
+
 def chatwithbot(txt:str):
-    prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product --> {reviews}",input_variables=["reviews"])
-    final_prompt = prompt.format(reviews=revString[0])
-    user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
     messages = [
     SystemMessage(content=final_prompt),
     HumanMessage(content=user_template.format(user_input=txt))
     ]
     res = chat_model(messages).content
-    res = res.split("</s>\n\n")[1]
+    res = res[res.find("assistant")+9:]
     return res
 
 
