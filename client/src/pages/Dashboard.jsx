@@ -62,6 +62,15 @@ const customIcons = {
     },
 };
 
+function IconContainer(props) {
+    const { value, ...other } = props;
+    return <span {...other}>{customIcons[value].icon}</span>;
+  }
+  
+  IconContainer.propTypes = {
+    value: PropTypes.number.isRequired,
+  };
+
 const Dashboard = () => {
     const dispatch = useDispatch();
     const user = JSON.parse(localStorage.getItem('user'));
@@ -241,6 +250,8 @@ const Dashboard = () => {
                                                 <StyledRating
                                                     name="highlight-selected-only"
                                                     // calc the average rating of product
+                                                    readOnly
+                                                    value={prod.avgRating}
                                                     IconContainerComponent={IconContainer}
                                                     getLabelText={(value) => customIcons[value].label}
                                                     highlightSelectedOnly
