@@ -7,3 +7,5 @@ bs4
 pandas
 pytrends
 scikit-learn
+pymongo
+torch

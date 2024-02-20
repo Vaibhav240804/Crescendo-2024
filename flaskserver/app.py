@@ -23,13 +23,9 @@ import time
 
 
 # # import statsmodels.api as sm
-
-# # ---------------------------------------
-# nltk.download('punkt')
 # nltk.download('wordnet')
 # nltk.download('stopwords')
 # # ---------------------------------------
-
 
 reviewList = []
 revString = [""]
@@ -264,10 +260,12 @@ def interest_over_time():
     }
     return jsonify(result), 200
 
+# ---------------- LDA NMF -------------------------------------------------
 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
+print(reviewList)
 reviews_df = pd.read_csv("reviews.csv")
 
 reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
@@ -311,7 +309,6 @@ for _, row in reviews_df.iterrows():
 @app.route('/related_sentences', methods=['GET'])
 def get_related_sentences():
     return jsonify(related_sentences)
-
 
 if __name__ == '__main__':
     client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
