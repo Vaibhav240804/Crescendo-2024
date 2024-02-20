@@ -4,6 +4,7 @@ import requests
 import time
 import datetime
 from bs4 import BeautifulSoup
+import pymongo
 
 reviewList = []
 revString = [""]
@@ -44,7 +45,7 @@ def extractReviews(rurl, uurl):
   # print(rurl)
   # print("pg no - ", pg)
   page = requests.get(rurl, headers=headers)
-  print(page)
+  # print(page)
   soup = BeautifulSoup(page.content, "html.parser")
   reviews = soup.findAll('div', {'data-hook': 'review' })
   print(len(reviews))
@@ -62,9 +63,9 @@ def extractReviews(rurl, uurl):
         'fullDate': fullDate,
         'date': date_obj,
     }
-    print(review)
+    # print(review)
     reviewList.append(review)
-    revString[0] += review['body']
+    revString[0] = revString[0] + " " + review['body']
   client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
   db = client['test']
   collect = db['cres_users']
@@ -91,6 +92,7 @@ if __name__ == "__main__":
         reviewUrl = url.replace("dp", "product-reviews") + "?pageNumber=" + str(1)
         # print(reviewUrl)
         x = extractReviews(reviewUrl, uniqueUrl)
-        print(x)
+        # print(x)
+        print(revString)
     except Exception as e:
         print(e)
