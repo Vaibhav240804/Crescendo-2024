@@ -4,14 +4,11 @@ from sklearn.feature_extraction.text import CountVectorizer
 from nltk.tokenize import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
-from flask import Flask, jsonify
 import nltk
 
 nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('stopwords')
-
-app = Flask(__name__)
 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
@@ -43,8 +40,9 @@ for topic_idx, topic in enumerate(nmf_model.components_):
         else:
             word_freq[word] = word_count
 
-overall_top_words = sorted(word_freq, key=word_freq.get, reverse=True)[:5]
 
+overall_top_words = sorted(word_freq, key=word_freq.get, reverse=True)[:5]
+print(overall_top_words)
 related_sentences = {}
 for word in overall_top_words:
     related_sentences[word] = []
@@ -56,9 +54,10 @@ for _, row in reviews_df.iterrows():
             if word in sentence:
                 related_sentences[word].append(sentence)
 
-@app.route('/related_sentences', methods=['GET'])
-def get_related_sentences():
-    return jsonify(related_sentences)
+print(related_sentences)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+for word, sentences in related_sentences.items():
+    print(word)
+    for sentence in sentences:
+        print(sentence)
+    print()
