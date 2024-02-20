@@ -64,6 +64,21 @@ const svaSchema = new mongoose.Schema({
   },
 })
 
+const aspecSentimentSchema = new mongoose.Schema({
+  aspect: {
+    type: String,
+    required: true,
+  },
+  label: {
+    type: String,
+    required: true,
+  },
+  score: {
+    type: Number,
+    required: true,
+  },
+})
+
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -92,7 +107,12 @@ const productSchema = new mongoose.Schema({
   reviews: [reviewSchema],
   sentiment: sentimentSchema,
   keywords: [keywordSchema],
-  sva: [svaSchema]
+  aspecSentiment: [aspecSentimentSchema],
+  sva: [svaSchema],
+  topicModel: {
+    type: Object,
+    required: true,
+  }
 });
 
 const userSchema = new mongoose.Schema({
