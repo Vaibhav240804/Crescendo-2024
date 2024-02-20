@@ -1,9 +1,20 @@
 from flask import Flask
 from flask import request
-from rake_nltk import Rake
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from rake_nltk import Rake
+
+# Sentimental Analysis
+from transformers import AutoTokenizer
+from transformers import AutoModelForSequenceClassification
+from scipy.special import softmax
+from flask import jsonify
+import numpy as np
+# Sentimental Analysis
+MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
+tokenizer = AutoTokenizer.from_pretrained(MODEL)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+
 
 app = Flask(__name__)
 
@@ -36,6 +47,32 @@ def kextract():
         return {'keywords':keywords}
     except Exception as e:
         return str(e)
+    
+# Sentimental Analysis    
+def polarity_scores_roberta(example):
+    encoded_text = tokenizer(example, return_tensors="pt")
+    output = model(**encoded_text)
+    scores = output[0][0].detach().numpy()
+    scores = softmax(scores)
+    scores = scores.astype(np.float64)
+
+    return {
+        "roberta_neg": scores[0],
+        "roberta_neu": scores[1],
+        "roberta_pos": scores[2],
+    }
+
+# Sentimental Analysis
+@app.route("/sentiment", methods=["POST"])
+def analyze_sentiment():
+    data = request.form['text']
+    text = data
+    try:
+        scores = polarity_scores_roberta(text)
+        return jsonify(scores)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/about')
 def about():
@@ -43,3 +80,5 @@ def about():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# for now done 
