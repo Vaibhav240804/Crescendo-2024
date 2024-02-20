@@ -11,17 +11,23 @@ const Home = () => {
     return (
         <section className="w-full h-full mx-auto max-w-7xl px-4  text-char flex items-start justify-between gap-4">
             <div className="mt-16 flex flex-col items-start justify-between gap-8 md:px-8">
-                <div>
+                <div className="flex flex-col gap-2">
+                <Center>
+                    <div className="w-full flex items-center gap-4 font-bold text-6xl">
+                        Welcome, <span className="bg-gradient-to-r from-[#662d91] via-indigo-800 to-[#33006F] text-transparent bg-clip-text" >{JSON.parse(localStorage.getItem('user')).name}</span>
+                    </div>
+                </Center>
                     <Left>
-                        <h2 className="max-w-lg text-4xl font-bold md:text-5xl text-black">
-                            Grow faster with our
-                            <span className="text-[#662d91]"> all in one solution</span>
+                        <h2 className="max-w-lg text-4xl font-bold md:text-4xl text-black">
+                            Grow faster with our all in
+                            <span className="text-[#662d91]"> one solution</span>
                         </h2>
                     </Left>
                     {/* <div>
                         <Text />
                     </div> */}
                 </div>
+
                 <div className="relative">
                     <Center>
                         <div className="w-full flex items-center gap-4 font-bold text-7xl">
@@ -51,7 +57,7 @@ const Home = () => {
                         </h2> */}
                         {/* <WaterGrid /> */}
                         <div className="text-lg font-semibold text-[#662d91]">
-                            Don't Just Manage Your Social, <span className=" text-black">Master It.</span> 
+                            Don't Just Manage Your Product, <span className=" text-black">Master It.</span> 
                         </div>
                     </Right>
                     {/* <div>

@@ -23,6 +23,9 @@ import requests
 import datetime
 import pymongo
 import time
+import os
+from dotenv import load_dotenv, get_key
+load_dotenv()
 # import nltk
 
 
@@ -33,6 +36,7 @@ import time
 # # nltk.download('wordnet')
 # # nltk.download('stopwords')
 # # ---------------------------------------
+
 
 reviewList = []
 revString = [""]
@@ -163,14 +167,12 @@ def index():
 def absa():
     review = revString[0]
     review = request.form['text']
-
     try:
         aspects = request.form['aspects']
         aspects = aspects.split(',')
     except Exception as e:
         print(str(e))
-        aspects = ['performance', 'durability', 'pricing', 'sensitivity']
-
+        aspects = ['performance','durability','pricing','sensitivity']
     try:
         res = []
         for aspect in aspects:
@@ -178,17 +180,7 @@ def absa():
             label = element[0]['label']
             score = element[0]['score']
             res.append({'aspect': aspect, 'label': label, 'score': score})
-
-        # Connect to MongoDB (replace with your connection details)
-        client = pymongo.MongoClient("mongodb+srv://your_username:your_password@your_cluster_address/?retryWrites=true&w=majority")
-        db = client['your_database_name']  # Replace with your actual database name
-        collect = db['your_collection_name']  # Replace with your actual collection name
-
-        # Insert the ABSA results into MongoDB
-        collect.insert_one({"review": review, "aspects": res})
-
         return jsonify(res)
-
     except Exception as e:
         return jsonify({"error": str(e)})
 
@@ -301,12 +293,10 @@ def interest_over_time():
     }
     return jsonify(result), 200
 
-# ---------------- LDA NMF -------------------------------------------------
 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-print(reviewList)
 reviews_df = pd.read_csv("reviews.csv")
 
 reviews_df['sentences'] = reviews_df['text'].apply(sent_tokenize)
@@ -351,6 +341,10 @@ for _, row in reviews_df.iterrows():
 def get_related_sentences():
     return jsonify(related_sentences)
 
+
+
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = get_key(key_to_get="HUGGINGFACEHUB_API_KEY",dotenv_path=".env")
+
 llm = HuggingFaceHub(
     repo_id="HuggingFaceH4/zephyr-7b-beta",
     task="text-generation",
@@ -362,27 +356,32 @@ llm = HuggingFaceHub(
     },
 )
 
-
-prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product {reviews}",input_variables=["reviews"])
-
 chat_model = ChatHuggingFace(llm=llm)
 
-final_prompt = prompt.format(reviews=revString[0])
-
-print(final_prompt)
-messages = [
+def chatwithbot(txt:str):
+    prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product --> {reviews}",input_variables=["reviews"])
+    final_prompt = prompt.format(reviews=revString[0])
+    user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
+    messages = [
     SystemMessage(content=final_prompt),
-]
+    HumanMessage(content=user_template.format(user_input=txt))
+    ]
+    res = chat_model(messages).content
+    res = res.split("</s>\n\n")[1]
+    return res
 
 
+    
 
 @app.route('/chat',methods=["POST"])
 def chat():
     try:
-        text = request.form['text']
-        return jsonify({"response": text})
+        txt = request.form['text']
+        res = chatwithbot(txt)
+        return jsonify(res)
     except Exception as e:
         return jsonify({"error": str(e)})
+
 
 if __name__ == '__main__':
     

@@ -23,6 +23,7 @@ def createProduct(url):
   price = soup.find('span', class_='a-offscreen').text.strip()
   date = datetime.datetime.now()
   strDate = date.strftime("%Y-%m-%d %H:%M:%S")
+  avgRating = soup.find('span', {'data-hook': 'rating-out-of-text'}).text.strip()
   print(price)
   print(desc)
   print(img)
@@ -34,6 +35,7 @@ def createProduct(url):
       'image': img,
       'price': price,
       'date': strDate,
+      'avgRating': float(avgRating.split()[0]),
       }
   client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
   db = client['test']
