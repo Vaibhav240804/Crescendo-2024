@@ -1,12 +1,12 @@
 {
-    "roberta_neg": 0.0023407102562487125,
-    "roberta_neu": 0.018144499510526657,
-    "roberta_pos": 0.9795148372650146,
+    "negative": 0.0023407102562487125,
+    "neutral": 0.018144499510526657,
+    "positive": 0.9795148372650146,
     "keywords": [
-        [
+        {
             8.5,
             "denture looking new"
-        ],
+        },
         [
             4.5,
             "denture cleaner"
