@@ -152,12 +152,14 @@ def index():
 @app.route('/absa', methods=['POST'])
 def absa():
     review = request.form['text']
+
     try:
         aspects = request.form['aspects']
         aspects = aspects.split(',')
     except Exception as e:
         print(str(e))
-        aspects = ['performance','durability','pricing','sensitivity']
+        aspects = ['performance', 'durability', 'pricing', 'sensitivity']
+
     try:
         res = []
         for aspect in aspects:
@@ -165,7 +167,17 @@ def absa():
             label = element[0]['label']
             score = element[0]['score']
             res.append({'aspect': aspect, 'label': label, 'score': score})
+
+        # Connect to MongoDB (replace with your connection details)
+        client = pymongo.MongoClient("mongodb+srv://your_username:your_password@your_cluster_address/?retryWrites=true&w=majority")
+        db = client['your_database_name']  # Replace with your actual database name
+        collect = db['your_collection_name']  # Replace with your actual collection name
+
+        # Insert the ABSA results into MongoDB
+        collect.insert_one({"review": review, "aspects": res})
+
         return jsonify(res)
+
     except Exception as e:
         return jsonify({"error": str(e)})
 
