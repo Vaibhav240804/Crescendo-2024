@@ -215,16 +215,16 @@ def kextract():
         r.extract_keywords_from_text(lemmatized_text)
         keywords_with_scores = r.get_ranked_phrases_with_scores()
         keywords_list = [{"word": keyword, "score": score} for score, keyword in keywords_with_scores]
-        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
-        db = client['test']
-        collect = db['cres_users']
+        # client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        # db = client['test']
+        # collect = db['cres_users']
 
-        filter_query = {"email": email}
-        update_query = {"$set": {"products.$[product].keywords": keywords_list}}
-        array_filters = [{"product.url": session.get('url')}]
-        update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
-        print("Documents matched:", update_result.matched_count)
-        print("Documents modified:", update_result.modified_count)
+        # filter_query = {"email": email}
+        # update_query = {"$set": {"products.$[product].keywords": keywords_list}}
+        # array_filters = [{"product.url": session.get('url')}]
+        # update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
+        # print("Documents matched:", update_result.matched_count)
+        # print("Documents modified:", update_result.modified_count)
         return jsonify(keywords_list)
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -244,11 +244,11 @@ def polarity_scores_roberta(example):
     }
 
 # Sentimental Analysis
-@app.route("/sentiment", methods=["POST"])
+@app.route("/sentiment", methods=["GET"])
 def analyze_sentiment():
     try:
-        data = request.form.to_dict()
-        text = data.get("text")
+        text = revString[0]
+        print(text,email)
         email = session.get('email')
 
         url = data.get("url")
