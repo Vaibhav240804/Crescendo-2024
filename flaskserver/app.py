@@ -325,21 +325,28 @@ def start():
 def interest_over_time():
     try:
         pytrends = TrendReq(hl='en-US', tz=360)
-        print(f"global title {global_title}")
         product_name = global_title
         print(f"\nproduct name {product_name}\n")
         kw_list = [product_name]
-        geo = "IN"
+        geo_global = "IN"
+        # geo_regional = "IN-IN"  # Regional level for India
         
         sva_data = {}
+        regional_data = {}
 
         for timeframe in valid_timeframes:
-            pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo)
+            # Global Interest Over Time
+            pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo_global)
             interest_over_time_df = pytrends.interest_over_time().reset_index()
             interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
             sva_data[timeframe] = interest_over_time_df.rename(columns={product_name: 'score'})[['date', 'score']].to_dict(orient='records')
 
-        result = {'sva': sva_data, 'product_name': global_title}
+            # Regional Interest
+            pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo_global)
+            regional_interest_df = pytrends.interest_by_region(resolution='CITY', inc_low_vol=True)
+            regional_data[timeframe] = regional_interest_df.to_dict()
+
+        result = {'sva': sva_data, 'regional': regional_data, 'product_name': global_title}
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)})
