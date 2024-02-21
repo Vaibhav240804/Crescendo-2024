@@ -36,6 +36,7 @@ import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import ChartComponent from '../components/dashboard/LDA';
 
 const StyledRating = styled(Rating)(({ theme }) => ({
     '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
@@ -333,7 +334,15 @@ const Dashboard = () => {
                         <div className="p-2 bg-white shadow-md rounded-xl">
                           <Aspect data={prod} />
                         </div>
+                      </div>  
+                      <div>
+                        <h2>LDA</h2>
+                        <div className="p-2 bg-white shadow-md rounded-xl">
+                          <ChartComponent/>
+                        </div>
                       </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
                       
                     </div>
                   </div>

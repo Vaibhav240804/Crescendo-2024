@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -10,32 +9,26 @@ import {
   Legend,
 } from "recharts";
 
-const LDA = () => {
-  const [data, setData] = useState([]);
-  const [count, setCount] = useState([]);
+import { useState } from "react";
+
+const ChartComponent = () => {
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch("http://127.0.0.1:5000/related_sentences");
+      const data = await response.json();
+      setData(data);
+      setLoading(false);
+    };
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://127.0.0.1:5000/related_sentences"); // Adjust the URL as needed
-      console.log(response.data);
-      const countData = data.map((item) => ({
-        name: item.name,
-        count: item.sentences.length,
-      }));
-        setCount(countData);
-        setData(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
-      const item = data.find((item) => item.name === label);
+      const category = payload[0].payload.category;
+      const lines = data[category];
       return (
         <div
           style={{
@@ -44,31 +37,39 @@ const LDA = () => {
             border: "1px solid #ccc",
           }}
         >
-          <p>{`${label} : ${payload[0].value}`}</p>
-          <p>Sentences:</p>
-          <ul>
-            {item.sentences.map((sentence, index) => (
-              <li key={index}>{sentence}</li>
-            ))}
-          </ul>
+          <p>
+            <strong>{category}</strong>
+          </p>
+          {lines.map((line, index) => (
+            <p key={index}>{line}</p>
+          ))}
         </div>
       );
     }
     return null;
   };
 
+  // Count occurrences of keywords in each category
+  const keywordCounts = Object.keys(data).map((category) => ({
+    category,
+    count: data[category].reduce(
+      (acc, text) => acc + (text.includes(category) ? 1 : 0),
+      0
+    ),
+  }));
+
   return (
-    <div>
-      <BarChart width={600} height={300} data={count}>
+    (loading && <div>Loading...</div>) || (
+      <BarChart width={600} height={300} data={keywordCounts}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
+        <XAxis dataKey="category" />
         <YAxis />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
         <Bar dataKey="count" fill="#8884d8" />
       </BarChart>
-    </div>
+    )
   );
 };
 
-export default LDA;
+export default ChartComponent;
