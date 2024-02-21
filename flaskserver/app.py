@@ -17,6 +17,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from bs4 import BeautifulSoup
+from flask_cors import CORS
 import numpy as np
 import pandas as pd
 import requests 
@@ -115,7 +116,7 @@ def extractReviews(rurl, uurl):
     reviewList.append(review)
     revString[0] = revString[0] + " " + review['body']
   filter_query = { "email": "sonarsiddhesh105@gmail.com" }  # Filter to find the user with the specified email
-  update_query = { "$set": { "products.$[product].reviews": reviewList } }  # Update the reviews field of the matched product
+  update_query = { "$set": { "products.$[product].reviews": reviewList[:10] } }  # Update the reviews field of the matched product
 
   # Use arrayFilters to match the specific product within the products array
   array_filters = [{ "product.url": uurl }]
@@ -154,6 +155,7 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'supersecret'
 
 # helper function to lemmatize the text
@@ -170,7 +172,7 @@ def index():
 
 
 # Aspect Based Sentiment Analysis
-@app.route('/absa', methods=['POST'])
+@app.route('/absa', methods=['POST', 'GET'])
 def absa():
     review = revString[0]
     # review = request.form['text']
@@ -202,13 +204,14 @@ def absa():
         return jsonify({"error": str(e)})
 
 
-@app.route('/kextract', methods=['POST'])
+@app.route('/kextract', methods=['GET'])
 def kextract():
     text = revString[0]
     r = Rake()
     try:
         lemmatized_text = lemmatize_text(text)
         email = session.get('email')
+        print(email, session.get('url'),revString[0])
         r.extract_keywords_from_text(lemmatized_text)
         keywords_with_scores = r.get_ranked_phrases_with_scores()
         keywords_list = [{"word": keyword, "score": score} for score, keyword in keywords_with_scores]
@@ -288,8 +291,20 @@ def start():
         # print(reviewUrl)
         x = extractReviews(reviewUrl, uniqueUrl)
         # print(x)
+        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        db = client['test']
+        collect = db['cres_users']
         print(revString)
-        return jsonify(revString)
+        user = collect.find_one({'email': session.get('email')})
+
+        if user:
+            # Retrieve product using URL
+            for product in user['products']:
+                if product['url'] == uniqueUrl:
+                    return jsonify(product)
+            return jsonify({'error': 'Product not found for the given URL'})
+        else:
+            return jsonify({'error': 'User not found'})
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)})

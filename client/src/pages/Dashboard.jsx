@@ -112,7 +112,7 @@ const Dashboard = () => {
         await axios.post('http://127.0.0.1:5000/start', formData)
             .then((res) => {
                 console.log(res.data);
-                // dispatch(setCurrProd(res.data));
+                dispatch(setCurrProd(res.data));
             })
             .catch((err) => {
                 console.log(err);
