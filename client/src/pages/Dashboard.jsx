@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import Center from '../animated-components/Center'
 import Star from '../components/dashboard/Star';
 import Sva from '../components/dashboard/Sva';
+import LDA from '../components/dashboard/LDA';
+import Aspect from '../components/dashboard/Aspect';
 import Keyword from '../components/dashboard/Keyword';
 import Sentiment from '../components/dashboard/Sentiment';
 import TextField from '@mui/material/TextField';
@@ -80,6 +82,8 @@ const Dashboard = () => {
     const [data, setData] = useState();
     const [state, setState] = useState(false);
     const prod = useSelector((state) => state.user.currProd);
+    const [loadingLink, setLoadingLink] = useState(false);
+    const [loadingText, setLoadingText] = useState('Fetching Data');
 
     const [url, setUrl] = useState('');
     // console.log(data);
@@ -106,6 +110,7 @@ const Dashboard = () => {
             toast.error('URL cannot be empty');
             return;
         }
+        setLoadingLink(true);
         const formData = new FormData();
         formData.append('url', url);
         formData.append('email', user.email);
@@ -113,6 +118,7 @@ const Dashboard = () => {
             .then((res) => {
                 console.log(res.data);
                 dispatch(setCurrProd(res.data));
+                setLoadingLink(false);
             })
             .catch((err) => {
                 console.log(err);
@@ -172,149 +178,171 @@ const Dashboard = () => {
             </List>
         </Box>
     );
-
+    
     return (
-        <>
-            {loading ?
-                (<Center>
-                    <CircularProgress
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                        }}
-                    />
-                </Center>)
-                : (<Center>
-                    <div className='w-full h-full p-4 flex flex-col items-start gap-4'>
-                        <div className='fixed'>
-                            <IconButton>
-                                <Hamburger
-                                    size={30}
-                                    color='black'
-                                    toggled={state}
-                                    toggle={setState}
-                                />
-                            </IconButton>
-                        </div>
-                        <Drawer
-                            anchor={'left'}
-                            open={state}
-                            onClose={toggleDrawer(false)}
+      <>
+        {loading ? (
+          <Center>
+            <CircularProgress
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </Center>
+        ) : (
+          <Center>
+            <div className="w-full h-full p-4 flex flex-col items-start gap-4">
+              <div className="fixed">
+                <IconButton>
+                  <Hamburger
+                    size={30}
+                    color="black"
+                    toggled={state}
+                    toggle={setState}
+                  />
+                </IconButton>
+              </div>
+              <Drawer
+                anchor={"left"}
+                open={state}
+                onClose={toggleDrawer(false)}
+              >
+                {list(data)}
+              </Drawer>
+              <>
+                {!prod ? (
+                  <>
+                    <div className="w-full flex flex-col items-center justify-center gap-4 text-center font-bold text-3xl">
+                      <div>Dashboard</div>
+                      <div className="w-[60%] flex items-center gap-2">
+                        <TextField
+                          label="Enter URL"
+                          variant="outlined"
+                          fullWidth
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                        />
+                        <IconButton
+                          color="primary"
+                          onClick={() => {
+                            console.log(url);
+                            handleUrl();
+                          }}
                         >
-                            {list(data)}
-                        </Drawer>
-                        <>
-                            {!prod ? (<>
-                                <div className='w-full flex flex-col items-center justify-center gap-4 text-center font-bold text-3xl'>
-                                    <div>
-                                        Dashboard
-                                    </div>
-                                    <div className='w-[60%] flex items-center gap-2'>
-                                        <TextField
-                                            label='Enter URL'
-                                            variant='outlined'
-                                            fullWidth
-                                            value={url}
-                                            onChange={(e) => setUrl(e.target.value)}
-                                        />
-                                        <IconButton
-                                            color='primary'
-                                            onClick={() => {
-                                                console.log(url);
-                                                handleUrl();
-                                            }}
-                                        >
-                                            <SendIcon sx={{
-                                                fontSize: 40,
-                                                color: '#33006F'
-                                            }} />
-                                        </IconButton>
-                                    </div>
-                                </div>
-                                <div className='w-full h-[31.5vh] text-center text-xl font-bold mt-16'>
-                                    Please Enter an Amazon URL to get started
-                                </div>
-                                <button>
-
-                                </button>
-                            </>)
-                                :
-                                (<div className='w-full flex flex-col items-center gap-8 justify-center'>
-                                    <div className='flex items-center justify-between p-2 bg-white shadow-xl rounded-xl text-center w-[90%]'>
-                                        <div className='w-[20%]'>
-                                            <img src={prod.image} alt="product" width="100%" className='cursor-pointer' onClick={() => {
-                                                window.open(prod.url);
-                                            }} />
-                                        </div>
-                                        <div className='w-[60%] flex flex-col items-start justify-normal gap-1 text-justify'>
-                                            <span className='font-bold text-black text-center'>
-                                                {prod.name}
-                                            </span>
-                                            <span className='font-bold text-black text-opacity-65 text-xs'>
-                                                {prod.description}
-                                            </span>
-                                        </div>
-                                        <div className='w-[15%] flex flex-col items-center justify-center gap-2 text-justify'>
-                                            <span className='font-bold text-2xl tracking-wide'>
-                                                {prod.price}
-                                            </span>
-                                            <span className='font-semibold text-sm text-black text-opacity-40'>
-                                                {prod.date}
-                                            </span>
-                                            <span className='text-xs text-blue-600 hover:underline cursor-pointer' onClick={() => {
-                                                window.open(prod.url);
-                                            }}>
-                                                View on Amazon
-                                            </span>
-                                            <span>
-                                                <StyledRating
-                                                    name="highlight-selected-only"
-                                                    // calc the average rating of product
-                                                    readOnly
-                                                    value={prod.avgRating}
-                                                    IconContainerComponent={IconContainer}
-                                                    getLabelText={(value) => customIcons[value].label}
-                                                    highlightSelectedOnly
-                                                />
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className='flex items-center justify-center gap-4'>
-                                        <div className=''>
-                                            <h2>Sentiment</h2>
-                                            <div className='p-2 bg-white shadow-md rounded-xl'>
-                                                <Sentiment data={prod} />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h2>Star Ratings Distribution</h2>
-                                            <div className='p-2 bg-white shadow-md rounded-xl'>
-                                                <Star data={prod} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className='flex items-center justify-center gap-4'>
-                                        <div className=''>
-                                            <h2>Keywords</h2>
-                                            <div className='p-2 bg-white shadow-md rounded-xl'>
-                                                <Keyword data={prod} />
-                                            </div>
-
-                                        </div>
-                                        <div>
-                                            <h2>Seasonal Variation Analysis</h2>
-                                            <div className='p-2 bg-white shadow-md rounded-xl'>
-                                                <Sva data={prod} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>)}
-                        </>
+                          <SendIcon
+                            sx={{
+                              fontSize: 40,
+                              color: "#33006F",
+                            }}
+                          />
+                        </IconButton>
+                      </div>
                     </div>
-                </Center>)}
-        </>
+                    <>
+                      {loadingLink ? (
+                        <div className="w-full h-[31.5vh] text-center text-xl font-bold mt-16 flex flex-col items-center gap-2">
+                          <CircularProgress />
+                          <span className="font-bold text-2xl text-black">
+                            Fetching Data...
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="w-full h-[31.5vh] text-center text-xl font-bold mt-16">
+                          Please Enter an Amazon URL to get started
+                        </div>
+                      )}
+                    </>
+                    <button></button>
+                  </>
+                ) : (
+                  <div className="w-full flex flex-col items-center gap-8 justify-center">
+                    <div className="flex items-center justify-between p-2 bg-white shadow-xl rounded-xl text-center w-[90%]">
+                      <div className="w-[20%]">
+                        <img
+                          src={prod.image}
+                          alt="product"
+                          width="100%"
+                          className="cursor-pointer"
+                          onClick={() => {
+                            window.open(prod.url);
+                          }}
+                        />
+                      </div>
+                      <div className="w-[60%] flex flex-col items-start justify-normal gap-1 text-justify">
+                        <span className="font-bold text-black text-center">
+                          {prod.name}
+                        </span>
+                        <span className="font-bold text-black text-opacity-65 text-xs">
+                          {prod.description}
+                        </span>
+                      </div>
+                      <div className="w-[15%] flex flex-col items-center justify-center gap-2 text-justify">
+                        <span className="font-bold text-2xl tracking-wide">
+                          {prod.price}
+                        </span>
+                        <span className="font-semibold text-sm text-black text-opacity-40">
+                          {prod.date}
+                        </span>
+                        <span
+                          className="text-xs text-blue-600 hover:underline cursor-pointer"
+                          onClick={() => {
+                            window.open(prod.url);
+                          }}
+                        >
+                          View on Amazon
+                        </span>
+                        <span>
+                          <StyledRating
+                            name="highlight-selected-only"
+                            // calc the average rating of product
+                            readOnly
+                            value={prod.avgRating}
+                            IconContainerComponent={IconContainer}
+                            getLabelText={(value) => customIcons[value].label}
+                            highlightSelectedOnly
+                          />
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="">
+                        <h2>Sentiment</h2>
+                        <div className="p-2 bg-white shadow-md rounded-xl">
+                          <Sentiment data={prod} />
+                        </div>
+                      </div>
+                      <div>
+                        <h2>Star Ratings Distribution</h2>
+                        <div className="p-2 bg-white shadow-md rounded-xl">
+                          <Star data={prod} />
+                        </div>
+                      </div>
+                      <div className="">
+                        <h2>Keywords</h2>
+                        <div className="p-2 bg-white shadow-md rounded-xl">
+                          <Keyword data={prod} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                      <div>
+                        <h2>Aspect Based Sentimental Analysis</h2>
+                        <div className="p-2 bg-white shadow-md rounded-xl">
+                          <Aspect data={prod} />
+                        </div>
+                      </div>
+                      
+                    </div>
+                  </div>
+                )}
+              </>
+            </div>
+          </Center>
+        )}
+      </>
     );
 };
 

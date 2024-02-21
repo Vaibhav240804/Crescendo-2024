@@ -15,11 +15,21 @@ const Sva = ({ data }) => {
       //     setLoading(false);
       // }
       const fetchData = async () => {
-          await axios.get("http://127.0.0.1:5000/sva")
+        const title = data.name
+        // check if title has spaces and replace with %20
+        const titleArr = title.split(' ');
+        const titleStr = titleArr.join('%20');
+        const url = `https://serpapi.com/search.json?engine=google_trends&q=Colgate%20MaxFresh%20Toothpaste&date=now+7-d&tz=-540&data_type=TIMESERIES&gl=in&api_key=ec2c1ad96bd52a6d5e2e2517b652f836464b651290bfe851687da79c97ce9a3a`;
+          await axios.get(url)
           .then((res) => {
             console.log(res.data);
-          setSvaData(res.data);
-          setCurrSva(res.data['now 7-d']);
+            const currSvaData = res.data.interest_over_time.map((item) => {
+              return {
+                date: item.date,
+                score: item.values.extracted_value
+              };
+            });
+            setSvaData(currSvaData);
           setLoading(false);
         })
         .catch((err) => {

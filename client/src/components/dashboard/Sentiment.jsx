@@ -21,19 +21,19 @@ const Sentiment = ({ data }) => {
   const [sentimentData, setSentimentData] = React.useState([]);
 
   React.useEffect(() => {
-    // if (data.sentiment) {
+    // if (res.data) {
     //   const sentimentData = [
     //     {
     //       name: "Negative",
-    //       value: parseFloat(data.sentiment.negative.toFixed(4)),
+    //       value: parseFloat(res.data.negative.toFixed(4)),
     //     },
     //     {
     //       name: "Neutral",
-    //       value: parseFloat(data.sentiment.neutral.toFixed(4)),
+    //       value: parseFloat(res.data.neutral.toFixed(4)),
     //     },
     //     {
     //       name: "Positive",
-    //       value: parseFloat(data.sentiment.positive.toFixed(4)),
+    //       value: parseFloat(res.data.positive.toFixed(4)),
     //     },
     //   ];
     //   setSentimentData(sentimentData);
@@ -44,10 +44,20 @@ const Sentiment = ({ data }) => {
         .get("http://127.0.0.1:5000/sentiment")
         .then((res) => {
           console.log(res.data);
-            const sentimentData = res.data.map((item) => ({
-                name: item.name,
-                value: parseFloat(item.value.toFixed(4)),
-            }));
+            const sentimentData = [
+              {
+                name: "Negative",
+                value: parseFloat(res.data.negative.toFixed(4)),
+              },
+              {
+                name: "Neutral",
+                value: parseFloat(res.data.neutral.toFixed(4)),
+              },
+              {
+                name: "Positive",
+                value: parseFloat(res.data.positive.toFixed(4)),
+              },
+            ];
             setSentimentData(sentimentData);
           setLoading(false);
         })
@@ -58,9 +68,9 @@ const Sentiment = ({ data }) => {
     fetchData();
   }, [data]);
   // const sentimentData = [
-  //     { name: 'Negative', value: parseFloat(data.sentiment.negative.toFixed(4)) },
-  //     { name: 'Neutral', value: parseFloat(data.sentiment.neutral.toFixed(4)) },
-  //     { name: 'Positive', value: parseFloat(data.sentiment.positive.toFixed(4)) }
+  //     { name: 'Negative', value: parseFloat(res.data.negative.toFixed(4)) },
+  //     { name: 'Neutral', value: parseFloat(res.data.neutral.toFixed(4)) },
+  //     { name: 'Positive', value: parseFloat(res.data.positive.toFixed(4)) }
   // ];
 
   const colors = ["#FF5733", "#3498DB", "#58D68D"];
@@ -70,10 +80,10 @@ const Sentiment = ({ data }) => {
       {loading ? (
         <CircularProgress />
       ) : (
-        <PieChart width={500} height={250}>
+        <PieChart width={450} height={250}>
           <Pie
             data={sentimentData}
-            cx={250}
+            cx={210}
             cy={100}
             innerRadius={60}
             outerRadius={80}

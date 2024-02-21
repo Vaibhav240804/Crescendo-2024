@@ -51,7 +51,7 @@ const Keyword = ({ data }) => {
       {loading ?
             <CircularProgress /> 
         : (
-        <div style={{ width: "500px", height: "250px" }}>
+        <div style={{ width: "450px", height: "250px" }}>
           <ReactWordcloud words={wordCloudData} options={options} />
         </div>
         )}

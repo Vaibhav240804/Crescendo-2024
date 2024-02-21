@@ -18,13 +18,15 @@ from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from bs4 import BeautifulSoup
 from flask_cors import CORS
-import numpy as np
-import pandas as pd
-import requests 
-import datetime
 import pymongo
 import time
 import os
+import json
+import numpy as np
+import pandas as pd
+import requests
+import datetime
+import torch
 from dotenv import load_dotenv, get_key
 load_dotenv()
 # import nltk
@@ -36,6 +38,8 @@ load_dotenv()
 # # nltk.download('wordnet')
 # # nltk.download('stopwords')
 # # ---------------------------------------
+app = Flask(__name__)
+CORS(app)
 
 reviewList = []
 global_title = ""
@@ -154,8 +158,6 @@ MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
-app = Flask(__name__)
-CORS(app)
 app.secret_key = 'supersecret'
 
 # helper function to lemmatize the text
@@ -172,7 +174,7 @@ def index():
 
 
 # Aspect Based Sentiment Analysis
-@app.route('/absa', methods=['POST', 'GET'])
+@app.route('/absa', methods=['GET'])
 def absa():
     review = revString[0]
     # review = request.form['text']
@@ -189,16 +191,16 @@ def absa():
             label = element[0]['label']
             score = element[0]['score']
             res.append({'aspect': aspect, 'label': label, 'score': score})
-        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
-        db = client['test']
-        collect = db['cres_users']
-        email = session.get('email')
-        filter_query = {"email": email}
-        update_query = {"$set": {"products.$[product].aspecSentiment": res}}
-        array_filters = [{"product.url": session.get('url')}]
-        update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
-        print("Documents matched:", update_result.matched_count)
-        print("Documents modified:", update_result.modified_count)
+        # client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        # db = client['test']
+        # collect = db['cres_users']
+        # email = session.get('email')
+        # filter_query = {"email": email}
+        # update_query = {"$set": {"products.$[product].aspecSentiment": res}}
+        # array_filters = [{"product.url": session.get('url')}]
+        # update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
+        # print("Documents matched:", update_result.matched_count)
+        # print("Documents modified:", update_result.modified_count)
         return jsonify(res)
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -230,52 +232,70 @@ def kextract():
         return jsonify({"error": str(e)})
 
 # Sentimental Analysis    
+    
+# def polarity_scores_roberta(example):
+#     encoded_text = tokenizer(example, return_tensors="pt")
+#     output = model(**encoded_text)
+#     scores = output[0][0].detach().numpy()
+#     scores = softmax(scores)
+#     scores = scores.astype(np.float64)
+
+#     return{
+#         "negative":  scores[0],
+#         "neutral": scores[1],
+#         "positive": scores[2]
+#     }
+
 def polarity_scores_roberta(example):
     encoded_text = tokenizer(example, return_tensors="pt")
-    output = model(**encoded_text)
+    with torch.no_grad():
+        output = model(**encoded_text)
     scores = output[0][0].detach().numpy()
     scores = softmax(scores)
     scores = scores.astype(np.float64)
 
-    return{
-        "negative":  scores[0],
-        "neutral": scores[1],
-        "positive": scores[2]
+    return {
+        "negative": float(scores[0]),
+        "neutral": float(scores[1]),
+        "positive": float(scores[2])
     }
+
 
 # Sentimental Analysis
 @app.route("/sentiment", methods=["GET"])
 def analyze_sentiment():
     try:
+        # data = request.form.to_dict()
+        # data = reviewList
+        # print('r list - ', data)
+        # text = []
+        # for d in data:
+        #     text.append(d['body'])
+        # # text = data.get("body")
+        # print('text - ', text)
+        # email = session.get('email')
         text = revString[0]
-        print(text,email)
-        email = session.get('email')
-
-        url = data.get("url")
-        if not url:
-            url = "https://www.amazon.in/DABUR-Toothpaste-800G-Ayurvedic-Treatment-Protection/dp/B07HKXSC6K?ref_=Oct_d_otopr_d_1374620031_1&pd_rd_w=kY9CL&content-id=amzn1.sym.c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_p=c4fc67ca-892d-48d9-b9ed-9d9fdea9998e&pf_rd_r=MHNFPBXAZ4VTV28WDF48&pd_rd_wg=kpToS&pd_rd_r=e5fbdca6-653c-4ace-80d9-a84f619d8dad&pd_rd_i=B07HKXSC6K"
 
         scores = polarity_scores_roberta(text)
-        session['url'] = url
-        # Connect to MongoDB (replace with your connection details)
-        client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
-        db = client['test']
-        collect = db['cres_users']
 
-        filter_query = {"email": email}
-        update_query = {"$set": {"products.$[product].sentiment": jsonify(scores)}}
-        array_filters = [{"product.url": url}]
+        # Connect to MongoDB
+        # client = pymongo.MongoClient("mongodb+srv://sonarsiddhesh105:K5NuO27RwuV2R986@cluster0.0aedb3y.mongodb.net/?retryWrites=true&w=majority")
+        # db = client['test']
+        # collect = db['cres_users']
 
-        update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
-        print("Documents matched:", update_result.matched_count)
-        print("Documents modified:", update_result.modified_count)
+        # filter_query = {"email": email}
+        # update_query = {"$set": {"products.$[product].sentiment": scores}}
+        # array_filters = [{"product.url": url}]
+
+        # update_result = collect.update_one(filter_query, update_query, array_filters=array_filters)
+        # print("Documents matched:", update_result.matched_count)
+        # print("Documents modified:", update_result.modified_count)
 
         # Directly return the sentiment scores as JSON
         return jsonify(scores)
 
     except Exception as e:
         return jsonify({"error": str(e)})
-
 
 
 @app.route('/start',methods=["POST"])
@@ -312,10 +332,10 @@ def start():
 
 
 
-@app.route('/sva', methods=['GET'])
+@app.route('/sva', methods=["GET"])
 def interest_over_time():
     pytrends = TrendReq(hl='en-US', tz=360)
-    product_name = "ColgATE"
+    product_name = global_title
     kw_list = [product_name]
     geo = "IN"
     
@@ -404,21 +424,20 @@ llm = HuggingFaceHub(
     },
 )
 
-
-prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product {reviews}",input_variables=["reviews"])
-
-chat_model = ChatHuggingFace(llm=llm)
-
-final_prompt = prompt.format(reviews=revString[0])
-user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
-
 def chatwithbot(txt:str):
+    prompt = PromptTemplate(template= "You're a helpful data assistant which can answer questions on following multiple reviews of a perticular product {reviews}",input_variables=["reviews"])
+
+    chat_model = ChatHuggingFace(llm=llm)
+
+    final_prompt = prompt.format(reviews=revString[0])
+    user_template= PromptTemplate(template="{user_input}", input_variables=["user_input"])
+
     messages = [
     SystemMessage(content=final_prompt),
     HumanMessage(content=user_template.format(user_input=txt))
     ]
     res = chat_model(messages).content
-    res = res[res.find("assistant")+9:]
+    res = res[res.find("<|assistant|>")+len("<|assistant|>"):]
     return res
 
 
