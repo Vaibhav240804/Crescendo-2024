@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import axios from "axios";
 
 import { useState } from "react";
 
@@ -17,8 +18,8 @@ const ChartComponent = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("http://127.0.0.1:5000/related_sentences");
-      const data = await response.json();
+      const response = await axios.get("http://127.0.0.1:5000/related_sentences");
+      const data = await response.data;
       setData(data);
       setLoading(false);
     };

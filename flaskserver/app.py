@@ -232,22 +232,11 @@ def kextract():
         return jsonify({"error": str(e)})
 
 # Sentimental Analysis    
-    
-# def polarity_scores_roberta(example):
-#     encoded_text = tokenizer(example, return_tensors="pt")
-#     output = model(**encoded_text)
-#     scores = output[0][0].detach().numpy()
-#     scores = softmax(scores)
-#     scores = scores.astype(np.float64)
-
-#     return{
-#         "negative":  scores[0],
-#         "neutral": scores[1],
-#         "positive": scores[2]
-#     }
 
 def polarity_scores_roberta(example):
     encoded_text = tokenizer(example, return_tensors="pt")
+    # trim the excess tokens
+    encoded_text = {k: v[:, :512] for k, v in encoded_text.items()}
     with torch.no_grad():
         output = model(**encoded_text)
     scores = output[0][0].detach().numpy()
@@ -334,22 +323,27 @@ def start():
 
 @app.route('/sva', methods=["GET"])
 def interest_over_time():
-    pytrends = TrendReq(hl='en-US', tz=360)
-    product_name = global_title
-    kw_list = [product_name]
-    geo = "IN"
+    try:
+        pytrends = TrendReq(hl='en-US', tz=360)
+        print(f"global title {global_title}")
+        product_name = global_title
+        print(f"\nproduct name {product_name}\n")
+        kw_list = [product_name]
+        geo = "IN"
+        
+        sva_data = {}
+
+        for timeframe in valid_timeframes:
+            pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo)
+            interest_over_time_df = pytrends.interest_over_time().reset_index()
+            interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
+            sva_data[timeframe] = interest_over_time_df.rename(columns={product_name: 'score'})[['date', 'score']].to_dict(orient='records')
+
+        result = {'sva': sva_data, 'product_name': global_title}
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)})
     
-    sva_data = {}
-
-    for timeframe in valid_timeframes:
-        pytrends.build_payload(kw_list, cat=0, timeframe=timeframe, geo=geo)
-        interest_over_time_df = pytrends.interest_over_time().reset_index()
-        interest_over_time_df['date'] = interest_over_time_df['date'].astype(str)
-        sva_data[timeframe] = interest_over_time_df.rename(columns={product_name: 'score'})[['date', 'score']].to_dict(orient='records')
-
-    result = {'sva': sva_data}
-
-    return jsonify(result), 200
 
 
 # ---------------------------------lda------------------------------------

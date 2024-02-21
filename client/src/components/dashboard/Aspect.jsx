@@ -16,24 +16,15 @@ const Aspect = ({ data }) => {
   const [aspects, setAspects] = React.useState([]);
 
   React.useEffect(() => {
-    // if (data.sva) {
-    //     const svaData = data.sva;
-    //     setSvaData(svaData);
-    //     setLoading(false);
-    // }
     const fetchData = async () => {
-      const title = data.name;
-      // check if title has spaces and replace with %20
-      await axios
-        .get('http://127.0.0.1:5000/absa')
-        .then((res) => {
-          console.log(res.data);
-          setAspects(res.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      try {
+        const res = await axios.get("http://127.0.0.1:5000/absa");
+        console.log(res.data);
+        setAspects(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.log(err);
+      }
     };
     fetchData();
   }, [data]);
@@ -67,7 +58,10 @@ const Aspect = ({ data }) => {
           <YAxis />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
-          <Bar dataKey="score" fill="#8884d8" />
+          <Bar
+            dataKey="score"
+            fill={data.label === "Positive" ? "#FE7A36" : "#9BCF53"}
+          />
         </BarChart>
       )}
     </>
