@@ -32,6 +32,8 @@ import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const StyledRating = styled(Rating)(({ theme }) => ({
     '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
@@ -65,11 +67,11 @@ const customIcons = {
 function IconContainer(props) {
     const { value, ...other } = props;
     return <span {...other}>{customIcons[value].icon}</span>;
-  }
-  
-  IconContainer.propTypes = {
+}
+
+IconContainer.propTypes = {
     value: PropTypes.number.isRequired,
-  };
+};
 
 const Dashboard = () => {
     const dispatch = useDispatch();
@@ -98,6 +100,25 @@ const Dashboard = () => {
         }
         fetchData();
     }, []);
+
+    const handleUrl = async () => {
+        if (!url) {
+            toast.error('URL cannot be empty');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('url', url);
+        formData.append('email', user.email);
+        await axios.post('http://127.0.0.1:5000/start', formData)
+            .then((res) => {
+                console.log(res.data);
+                // dispatch(setCurrProd(res.data));
+            })
+            .catch((err) => {
+                console.log(err);
+                toast.error('Error in fetching data');
+            })
+    }
 
     const toggleDrawer = (open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -202,6 +223,7 @@ const Dashboard = () => {
                                             color='primary'
                                             onClick={() => {
                                                 console.log(url);
+                                                handleUrl();
                                             }}
                                         >
                                             <SendIcon sx={{

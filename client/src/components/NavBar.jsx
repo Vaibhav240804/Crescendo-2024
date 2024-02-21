@@ -7,7 +7,7 @@ import logo from '../assets/logo-hck.svg'
 const navigation = [
     { name: 'Home', href: '/home', current: false },
     { name: 'Dashboard', href: '/dashboard', current: false },
-    { name: 'ChatBot', href: '/chatbot', current: false },
+    // { name: 'ChatBot', href: '/chatbot', current: false },
 ]
 
 function classNames(...classes) {
